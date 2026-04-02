@@ -5,16 +5,16 @@ import { usePathname } from 'next/navigation'
 
 const ITENS = [
   { href: '/', label: 'Início', emoji: '🏠' },
-  { href: '/buscar', label: 'Buscar', emoji: '🔍' },
-  { href: '/ofertas', label: 'Ofertas', emoji: '🔥' },
-  { href: '/categorias', label: 'Categorias', emoji: '📂' },
+  { href: '/sobre', label: 'Sobre', emoji: 'ℹ️' },
+  { href: '/pets', label: 'Pets', emoji: '🐾' },
+  { href: '/games', label: 'Games', emoji: '🎮' },
 ]
 
 export default function BottomNav() {
   const pathname = usePathname()
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-10 flex justify-around border-t border-gray-100 bg-white pb-4 pt-2.5 shadow-[0_-2px_12px_rgba(0,0,0,0.06)]">
+    <nav className="fixed bottom-0 left-0 right-0 z-10 flex justify-around border-t border-card-border bg-surface pb-4 pt-2.5">
       {ITENS.map(item => {
         const ativo = pathname === item.href
         return (
@@ -22,7 +22,7 @@ export default function BottomNav() {
             key={item.href}
             href={item.href}
             className={`flex flex-col items-center gap-0.5 text-[9px] font-semibold ${
-              ativo ? 'text-brand' : 'text-gray-400'
+              ativo ? 'text-brand' : 'text-muted-foreground'
             }`}
           >
             <span className="text-xl">{item.emoji}</span>

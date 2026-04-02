@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import type { Categoria } from '../types'
+import type { Categoria } from '@/types'
 
 interface CategoryGridProps {
   categorias: Categoria[]
@@ -8,7 +8,7 @@ interface CategoryGridProps {
 
 export default function CategoryGrid({ categorias, slugAtivo }: CategoryGridProps) {
   return (
-    <div className="flex flex-wrap justify-center gap-x-2.5 gap-y-4 px-5 pb-5">
+    <div className="flex flex-wrap justify-center gap-x-3 gap-y-4 px-5 pb-5">
       {categorias.map(cat => {
         const ativo = cat.slug === slugAtivo
         return (
@@ -18,13 +18,17 @@ export default function CategoryGrid({ categorias, slugAtivo }: CategoryGridProp
             className="flex flex-col items-center gap-1.5"
           >
             <div
-              className="flex h-14 w-14 items-center justify-center rounded-2xl text-2xl shadow-sm"
-              style={{ background: cat.cor }}
+              className="flex h-14 w-14 items-center justify-center rounded-2xl text-2xl"
+              style={{
+                backgroundColor: ativo ? cat.cor : 'rgba(255,255,255,0.08)',
+                boxShadow: ativo ? `0 0 12px ${cat.cor}66` : undefined,
+              }}
             >
               {cat.emoji}
             </div>
             <span
-              className={`text-[10px] font-bold ${ativo ? 'text-brand' : 'text-gray-500'}`}
+              className={`text-[10px] font-bold ${ativo ? 'text-white' : 'text-muted-foreground'}`}
+              style={ativo ? { color: cat.cor } : undefined}
             >
               {cat.nome}
             </span>
