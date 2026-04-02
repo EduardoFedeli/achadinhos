@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getCategorias, getCategoria } from '../../lib/produtos'
 import Header from '../../components/Header'
@@ -8,6 +9,16 @@ import BottomNav from '../../components/BottomNav'
 
 interface PageProps {
   params: Promise<{ categoria: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { categoria: slug } = await params
+  const cat = getCategoria(slug)
+  if (!cat) return {}
+  return {
+    title: `${cat.nome} — Achadinhos`,
+    description: cat.descricao,
+  }
 }
 
 export async function generateStaticParams() {
