@@ -1,0 +1,274 @@
+{
+  "categorias": [
+    {
+      "nome": "Pets",
+      "slug": "pets",
+      "emoji": "🐾",
+      "cor": "#FFF3ED",
+      "descricao": "Tudo para seu bichinho",
+      "produtos": [
+        {
+          "id": "pets-001",
+          "nome": "Coleira ajustável premium para cães médios",
+          "preco": "R$ 49,90",
+          "imagem": null,
+          "link_afiliado": "https://amzn.to/exemplo",
+          "loja": "amazon",
+          "destaque": true
+        },
+        {
+          "id": "pets-002",
+          "nome": "Comedouro automático com timer programável",
+          "preco": "R$ 129,90",
+          "imagem": null,
+          "link_afiliado": "https://amzn.to/exemplo",
+          "loja": "amazon",
+          "destaque": false
+        },
+        {
+          "id": "pets-003",
+          "nome": "Arranhador em sisal para gatos — 60cm",
+          "preco": "R$ 39,90",
+          "imagem": null,
+          "link_afiliado": "https://shopee.com.br/exemplo",
+          "loja": "shopee",
+          "destaque": true
+        },
+        {
+          "id": "pets-004",
+          "nome": "Ração premium para cães adultos 15kg",
+          "preco": "R$ 189,90",
+          "imagem": null,
+          "link_afiliado": "https://amzn.to/exemplo",
+          "loja": "amazon",
+          "destaque": false
+        }
+      ]
+    },
+    {
+      "nome": "Games",
+      "slug": "games",
+      "emoji": "🎮",
+      "cor": "#EDF2FF",
+      "descricao": "Equipamentos e acessórios gamer",
+      "produtos": [
+        {
+          "id": "games-001",
+          "nome": "Controle sem fio gamer com LED RGB",
+          "preco": "R$ 129,90",
+          "imagem": null,
+          "link_afiliado": "https://amzn.to/exemplo",
+          "loja": "amazon",
+          "destaque": true
+        },
+        {
+          "id": "games-002",
+          "nome": "Headset gamer 7.1 surround com microfone",
+          "preco": "R$ 149,90",
+          "imagem": null,
+          "link_afiliado": "https://amzn.to/exemplo",
+          "loja": "amazon",
+          "destaque": false
+        },
+        {
+          "id": "games-003",
+          "nome": "Mousepad gamer XL 80x40cm antiderrapante",
+          "preco": "R$ 59,90",
+          "imagem": null,
+          "link_afiliado": "https://shopee.com.br/exemplo",
+          "loja": "shopee",
+          "destaque": true
+        },
+        {
+          "id": "games-004",
+          "nome": "Cadeira gamer ergonômica com apoio lombar",
+          "preco": "R$ 899,90",
+          "imagem": null,
+          "link_afiliado": "https://amzn.to/exemplo",
+          "loja": "amazon",
+          "destaque": false
+        }
+      ]
+    },
+    {
+      "nome": "Esporte",
+      "slug": "esporte",
+      "emoji": "👟",
+      "cor": "#EBFBEE",
+      "descricao": "Para quem não para quieto",
+      "produtos": [
+        {
+          "id": "esporte-001",
+          "nome": "Tênis esportivo respirável unissex",
+          "preco": "R$ 89,90",
+          "imagem": null,
+          "link_afiliado": "https://shopee.com.br/exemplo",
+          "loja": "shopee",
+          "destaque": true
+        },
+        {
+          "id": "esporte-002",
+          "nome": "Garrafa térmica 1L aço inox com alça",
+          "preco": "R$ 49,90",
+          "imagem": null,
+          "link_afiliado": "https://amzn.to/exemplo",
+          "loja": "amazon",
+          "destaque": false
+        },
+        {
+          "id": "esporte-003",
+          "nome": "Corda de pular com contador digital",
+          "preco": "R$ 29,90",
+          "imagem": null,
+          "link_afiliado": "https://shopee.com.br/exemplo",
+          "loja": "shopee",
+          "destaque": true
+        },
+        {
+          "id": "esporte-004",
+          "nome": "Mochila esportiva impermeável 30L",
+          "preco": "R$ 119,90",
+          "imagem": null,
+          "link_afiliado": "https://amzn.to/exemplo",
+          "loja": "amazon",
+          "destaque": false
+        }
+      ]
+    },
+    {
+      "nome": "Livros",
+      "slug": "livros",
+      "emoji": "📚",
+      "cor": "#FFF9DB",
+      "descricao": "Leituras que valem cada centavo",
+      "produtos": [
+        {
+          "id": "livros-001",
+          "nome": "Box Harry Potter — Edição especial capa dura",
+          "preco": "R$ 159,90",
+          "imagem": null,
+          "link_afiliado": "https://amzn.to/exemplo",
+          "loja": "amazon",
+          "destaque": true
+        },
+        {
+          "id": "livros-002",
+          "nome": "Atomic Habits — James Clear (capa comum)",
+          "preco": "R$ 39,90",
+          "imagem": null,
+          "link_afiliado": "https://amzn.to/exemplo",
+          "loja": "amazon",
+          "destaque": false
+        },
+        {
+          "id": "livros-003",
+          "nome": "Livro de receitas fit — 200 receitas saudáveis",
+          "preco": "R$ 49,90",
+          "imagem": null,
+          "link_afiliado": "https://shopee.com.br/exemplo",
+          "loja": "shopee",
+          "destaque": true
+        },
+        {
+          "id": "livros-004",
+          "nome": "Box Naruto Shippuden — Volumes 1 a 5",
+          "preco": "R$ 89,90",
+          "imagem": null,
+          "link_afiliado": "https://amzn.to/exemplo",
+          "loja": "amazon",
+          "destaque": false
+        }
+      ]
+    },
+    {
+      "nome": "Roupas",
+      "slug": "roupas",
+      "emoji": "👗",
+      "cor": "#FCE4EC",
+      "descricao": "Estilo sem gastar muito",
+      "produtos": [
+        {
+          "id": "roupas-001",
+          "nome": "Blusa oversized tie-dye verão unissex",
+          "preco": "R$ 39,90",
+          "imagem": null,
+          "link_afiliado": "https://shopee.com.br/exemplo",
+          "loja": "shopee",
+          "destaque": true
+        },
+        {
+          "id": "roupas-002",
+          "nome": "Calça jogger moletom slim fit",
+          "preco": "R$ 69,90",
+          "imagem": null,
+          "link_afiliado": "https://shopee.com.br/exemplo",
+          "loja": "shopee",
+          "destaque": false
+        },
+        {
+          "id": "roupas-003",
+          "nome": "Moletom canguru com capuz algodão premium",
+          "preco": "R$ 89,90",
+          "imagem": null,
+          "link_afiliado": "https://amzn.to/exemplo",
+          "loja": "amazon",
+          "destaque": true
+        },
+        {
+          "id": "roupas-004",
+          "nome": "Vestido midi floral verão — tamanhos P ao GG",
+          "preco": "R$ 59,90",
+          "imagem": null,
+          "link_afiliado": "https://shopee.com.br/exemplo",
+          "loja": "shopee",
+          "destaque": false
+        }
+      ]
+    },
+    {
+      "nome": "Casa",
+      "slug": "casa",
+      "emoji": "🏠",
+      "cor": "#F3E8FF",
+      "descricao": "Deixa sua casa mais bonita",
+      "produtos": [
+        {
+          "id": "casa-001",
+          "nome": "Luminária LED de mesa touch recarregável",
+          "preco": "R$ 59,90",
+          "imagem": null,
+          "link_afiliado": "https://amzn.to/exemplo",
+          "loja": "amazon",
+          "destaque": true
+        },
+        {
+          "id": "casa-002",
+          "nome": "Suporte articulado para celular — mesa e cama",
+          "preco": "R$ 29,90",
+          "imagem": null,
+          "link_afiliado": "https://shopee.com.br/exemplo",
+          "loja": "shopee",
+          "destaque": false
+        },
+        {
+          "id": "casa-003",
+          "nome": "Organizador de gaveta modular 10 peças",
+          "preco": "R$ 49,90",
+          "imagem": null,
+          "link_afiliado": "https://amzn.to/exemplo",
+          "loja": "amazon",
+          "destaque": true
+        },
+        {
+          "id": "casa-004",
+          "nome": "Difusor de aromas elétrico ultrassônico 400ml",
+          "preco": "R$ 79,90",
+          "imagem": null,
+          "link_afiliado": "https://shopee.com.br/exemplo",
+          "loja": "shopee",
+          "destaque": false
+        }
+      ]
+    }
+  ]
+}
