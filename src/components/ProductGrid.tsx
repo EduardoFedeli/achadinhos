@@ -17,13 +17,19 @@ export default function ProductGrid({ produtos, categorias }: ProductGridProps) 
 
   return (
     <div className="grid grid-cols-2 gap-3 px-5">
-      {produtos.map(produto => (
-        <ProductCard
-          key={produto.id}
-          produto={produto}
-          categoria={catPorIdProduto.get(produto.id) ?? categorias[0]}
-        />
-      ))}
+      {produtos.map(produto => {
+        const categoria = catPorIdProduto.get(produto.id)
+        if (!categoria && process.env.NODE_ENV === 'development') {
+          console.warn(`[ProductGrid] Produto "${produto.id}" não encontrado em nenhuma categoria`)
+        }
+        return (
+          <ProductCard
+            key={produto.id}
+            produto={produto}
+            categoria={categoria ?? categorias[0]}
+          />
+        )
+      })}
     </div>
   )
 }

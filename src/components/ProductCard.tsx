@@ -16,6 +16,7 @@ export default function ProductCard({ produto, categoria }: ProductCardProps) {
       href={produto.link_afiliado}
       target="_blank"
       rel="noopener noreferrer sponsored"
+      aria-label={`Ver oferta: ${produto.nome}`}
       className="flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm"
     >
       {/* Thumb */}
@@ -45,7 +46,7 @@ export default function ProductCard({ produto, categoria }: ProductCardProps) {
       </div>
 
       {/* Botão */}
-      <div className="m-2.5 mt-2 rounded-lg bg-brand py-2 text-center text-[11px] font-bold text-white">
+      <div aria-hidden="true" className="m-2.5 mt-2 rounded-lg bg-brand py-2 text-center text-[11px] font-bold text-white">
         Ver oferta →
       </div>
     </a>

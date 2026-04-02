@@ -7,12 +7,14 @@ export default function Header() {
       </span>
       <div className="flex gap-2">
         <button
+          type="button"
           aria-label="Buscar"
           className="flex h-9 w-9 items-center justify-center rounded-full bg-orange-50 text-lg"
         >
           🔍
         </button>
         <button
+          type="button"
           aria-label="Notificações"
           className="flex h-9 w-9 items-center justify-center rounded-full bg-orange-50 text-lg"
         >
