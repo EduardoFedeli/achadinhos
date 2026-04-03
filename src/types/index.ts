@@ -26,7 +26,8 @@ export interface Produto {
 export interface Categoria {
   nome: string
   slug: string
-  emoji: string
+  emoji?: string         // Mantemos como opcional para fallback
+  iconeUrl?: string      // Campo para o novo Flat Icon da IA
   cor: string
   descricao: string
   produtos: Produto[]

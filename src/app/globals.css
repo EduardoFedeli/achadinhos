@@ -5,9 +5,11 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  /* Brand */
-  --color-brand:        #F97316;
-  --color-brand-yellow: #FFD23F;
+  /* Brand T-Hex Indica */
+  --color-brand-green:  #22C55E;
+  --color-brand-aqua:   #22D3EE;
+  --color-brand-brown:  #936A47;
+  --color-brand-gold:   #FFD700;
 
   /* Layout backgrounds */
   --color-page-bg:      #0F0F13;
@@ -55,7 +57,7 @@
   --font-mono: var(--font-geist-mono);
 }
 
-/* --- LIGHT MODE --- */
+/* --- LIGHT MODE (Restrito ao Admin se necessário) --- */
 :root {
   --background:             #F9FAFB;
   --foreground:             #09090B;
@@ -63,8 +65,8 @@
   --card-foreground:        #09090B;
   --popover:                #FFFFFF;
   --popover-foreground:     #09090B;
-  --primary:                #F97316;
-  --primary-foreground:     #FFFFFF;
+  --primary:                #22C55E;
+  --primary-foreground:     #0F0F13;
   --secondary:              #F4F4F5;
   --secondary-foreground:   #18181B;
   --muted:                  #F4F4F5;
@@ -74,46 +76,30 @@
   --destructive:            #EF4444;
   --border:                 #E4E4E7;
   --input:                  #E4E4E7;
-  --ring:                   #F97316;
+  --ring:                   #22C55E;
   --radius:                 0.625rem;
-  --sidebar:                #FFFFFF;
-  --sidebar-foreground:     #09090B;
-  --sidebar-primary:        #F97316;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent:         #F4F4F5;
-  --sidebar-accent-foreground: #18181B;
-  --sidebar-border:         #E4E4E7;
-  --sidebar-ring:           #F97316;
 }
 
 /* --- DARK MODE (T-Hex Indica Default) --- */
 .dark {
   --background:             #0F0F13;
-  --foreground:             #F9FAFB;
-  --card:                   #1E1E2E;
-  --card-foreground:        #F9FAFB;
+  --foreground:             #FFFFFF;
+  --card:                   #1A1A24;
+  --card-foreground:        #FFFFFF;
   --popover:                #1E1E2E;
-  --popover-foreground:     #F9FAFB;
-  --primary:                #F97316;
-  --primary-foreground:     #FFFFFF;
+  --popover-foreground:     #FFFFFF;
+  --primary:                #22C55E; /* Jade Green na veia */
+  --primary-foreground:     #0F0F13; /* Texto preto sobre botões verdes */
   --secondary:              #1A1A24;
-  --secondary-foreground:   #F9FAFB;
+  --secondary-foreground:   #FFFFFF;
   --muted:                  #1A1A24;
   --muted-foreground:       #A1A1AA;
   --accent:                 #2A2A35;
-  --accent-foreground:      #F9FAFB;
+  --accent-foreground:      #FFFFFF;
   --destructive:            #EF4444;
   --border:                 #2A2A35;
   --input:                  #2A2A35;
-  --ring:                   #F97316;
-  --sidebar:                #1A1A24;
-  --sidebar-foreground:     #F9FAFB;
-  --sidebar-primary:        #F97316;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent:         #2A2A35;
-  --sidebar-accent-foreground: #F9FAFB;
-  --sidebar-border:         #2A2A35;
-  --sidebar-ring:           #F97316;
+  --ring:                   #22C55E;
 }
 
 @layer base {

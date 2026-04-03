@@ -42,24 +42,6 @@
           "createdAt": "2026-04-03T15:50:04.949Z"
         },
         {
-          "id": "pet-005",
-          "nome": "Cama aconchegante lavável para cães e gatos",
-          "preco": 89.9,
-          "preco_original": 119.9,
-          "desconto_pct": 25,
-          "imagem": "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=400&h=400&fit=crop",
-          "link_afiliado": "https://shopee.com.br/exemplo",
-          "loja": "shopee",
-          "tags": [
-            "cachorro",
-            "gato",
-            "camas-casinhas"
-          ],
-          "destaque": true,
-          "novo": false,
-          "createdAt": "2026-04-03T15:50:04.949Z"
-        },
-        {
           "id": "pet-006",
           "nome": "Kit higiene pet — escova + shampoo + perfume",
           "preco": 59.9,
@@ -107,6 +89,24 @@
           "destaque": true,
           "novo": false,
           "createdAt": "2026-04-03T15:50:04.949Z"
+        },
+        {
+          "id": "pet-005",
+          "nome": "Cama aconchegante lavável para cães e gatos",
+          "preco": 89.9,
+          "preco_original": 119.9,
+          "desconto_pct": 25,
+          "imagem": "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=400&h=400&fit=crop",
+          "link_afiliado": "https://shopee.com.br/exemplo",
+          "loja": "shopee",
+          "tags": [
+            "cachorro",
+            "gato",
+            "camas-casinhas"
+          ],
+          "destaque": true,
+          "novo": false,
+          "createdAt": "2025-12-10T12:00:00.000Z"
         }
       ]
     },
@@ -732,7 +732,7 @@
       ]
     },
     {
-      "nome": "Eletrodomésticos",
+      "nome": "Eletros",
       "slug": "eletrodomesticos",
       "emoji": "⚡",
       "cor": "#e09c0b",
@@ -846,7 +846,8 @@
           "novo": true,
           "createdAt": "2026-04-03T15:50:04.949Z"
         }
-      ]
+      ],
+      "iconeUrl": ""
     },
     {
       "nome": "Livros",
