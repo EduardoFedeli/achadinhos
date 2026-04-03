@@ -10,74 +10,95 @@
         {
           "id": "pet-001",
           "nome": "Coleira ajustável premium para cães médios",
-          "preco": 49.90,
-          "preco_original": 79.90,
+          "preco": 49.9,
+          "preco_original": 79.9,
           "desconto_pct": 37,
           "imagem": "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&h=400&fit=crop",
           "link_afiliado": "https://amzn.to/exemplo",
           "loja": "amazon",
-          "tags": ["cachorro", "coleira"],
+          "tags": [
+            "cachorro",
+            "coleira"
+          ],
           "destaque": true,
           "novo": false
         },
         {
           "id": "pet-002",
           "nome": "Comedouro automático com timer programável",
-          "preco": 129.90,
-          "preco_original": 169.90,
+          "preco": 129.9,
+          "preco_original": 169.9,
           "desconto_pct": 24,
           "imagem": "https://images.unsplash.com/photo-1601758125946-6ec2ef64daf8?w=400&h=400&fit=crop",
           "link_afiliado": "https://amzn.to/exemplo",
           "loja": "amazon",
-          "tags": ["cachorro", "gato", "alimentacao"],
+          "tags": [
+            "cachorro",
+            "gato",
+            "alimentacao"
+          ],
           "destaque": false,
           "novo": true
         },
         {
           "id": "pet-003",
           "nome": "Arranhador em sisal para gatos 60cm",
-          "preco": 39.90,
+          "preco": 39.9,
           "imagem": "https://images.unsplash.com/photo-1574144611937-0df059b5ef3e?w=400&h=400&fit=crop",
           "link_afiliado": "https://shopee.com.br/exemplo",
           "loja": "shopee",
-          "tags": ["gato", "brinquedos"],
+          "tags": [
+            "gato",
+            "brinquedos"
+          ],
           "destaque": true,
           "novo": false
         },
         {
           "id": "pet-004",
           "nome": "Ração premium para cães adultos 15kg",
-          "preco": 189.90,
-          "preco_original": 229.90,
+          "preco": 189.9,
+          "preco_original": 229.9,
           "desconto_pct": 17,
           "imagem": "https://images.unsplash.com/photo-1568640347023-a616a30bc3bd?w=400&h=400&fit=crop",
           "link_afiliado": "https://amzn.to/exemplo",
           "loja": "amazon",
-          "tags": ["cachorro", "alimentacao"],
+          "tags": [
+            "cachorro",
+            "alimentacao"
+          ],
           "destaque": false,
           "novo": false
         },
         {
           "id": "pet-005",
           "nome": "Cama aconchegante lavável para cães e gatos",
-          "preco": 89.90,
-          "preco_original": 119.90,
+          "preco": 89.9,
+          "preco_original": 119.9,
           "desconto_pct": 25,
           "imagem": "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=400&h=400&fit=crop",
           "link_afiliado": "https://shopee.com.br/exemplo",
           "loja": "shopee",
-          "tags": ["cachorro", "gato", "camas-casinhas"],
+          "tags": [
+            "cachorro",
+            "gato",
+            "camas-casinhas"
+          ],
           "destaque": true,
           "novo": false
         },
         {
           "id": "pet-006",
           "nome": "Kit higiene pet — escova + shampoo + perfume",
-          "preco": 59.90,
+          "preco": 59.9,
           "imagem": "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&h=400&fit=crop",
           "link_afiliado": "https://shopee.com.br/exemplo",
           "loja": "shopee",
-          "tags": ["cachorro", "gato", "higiene"],
+          "tags": [
+            "cachorro",
+            "gato",
+            "higiene"
+          ],
           "destaque": false,
           "novo": true
         }
@@ -93,76 +114,95 @@
         {
           "id": "games-001",
           "nome": "Controle sem fio gamer com LED RGB",
-          "preco": 129.90,
-          "preco_original": 179.90,
+          "preco": 129.9,
+          "preco_original": 179.9,
           "desconto_pct": 28,
           "imagem": "https://images.unsplash.com/photo-1592840062661-a5a7f78e2056?w=400&h=400&fit=crop",
           "link_afiliado": "https://amzn.to/exemplo",
           "loja": "amazon",
-          "tags": ["acessorios", "pc", "xbox"],
+          "tags": [
+            "acessorios",
+            "pc",
+            "xbox"
+          ],
           "destaque": true,
           "novo": false
         },
         {
           "id": "games-002",
           "nome": "Headset gamer 7.1 surround com microfone",
-          "preco": 149.90,
-          "preco_original": 199.90,
+          "preco": 149.9,
+          "preco_original": 199.9,
           "desconto_pct": 25,
           "imagem": "https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=400&h=400&fit=crop",
           "link_afiliado": "https://amzn.to/exemplo",
           "loja": "amazon",
-          "tags": ["acessorios", "pc"],
+          "tags": [
+            "acessorios",
+            "pc"
+          ],
           "destaque": false,
           "novo": false
         },
         {
           "id": "games-003",
           "nome": "Mousepad gamer XL 80x40cm antiderrapante",
-          "preco": 59.90,
+          "preco": 59.9,
           "imagem": "https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=400&h=400&fit=crop",
           "link_afiliado": "https://shopee.com.br/exemplo",
           "loja": "shopee",
-          "tags": ["acessorios", "pc"],
+          "tags": [
+            "acessorios",
+            "pc"
+          ],
           "destaque": true,
           "novo": false
         },
         {
           "id": "games-004",
           "nome": "Cadeira gamer ergonômica com apoio lombar",
-          "preco": 899.90,
-          "preco_original": 1199.90,
+          "preco": 899.9,
+          "preco_original": 1199.9,
           "desconto_pct": 25,
           "imagem": "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=400&h=400&fit=crop",
           "link_afiliado": "https://amzn.to/exemplo",
           "loja": "amazon",
-          "tags": ["acessorios", "pc"],
+          "tags": [
+            "acessorios",
+            "pc"
+          ],
           "destaque": false,
           "novo": false
         },
         {
           "id": "games-005",
           "nome": "Teclado mecânico gamer switches blue",
-          "preco": 199.90,
-          "preco_original": 279.90,
+          "preco": 199.9,
+          "preco_original": 279.9,
           "desconto_pct": 29,
           "imagem": "https://images.unsplash.com/photo-1511467687858-23d96c32e4ae?w=400&h=400&fit=crop",
           "link_afiliado": "https://amzn.to/exemplo",
           "loja": "amazon",
-          "tags": ["acessorios", "pc"],
+          "tags": [
+            "acessorios",
+            "pc"
+          ],
           "destaque": true,
           "novo": true
         },
         {
           "id": "games-006",
           "nome": "Mouse gamer 12000 DPI RGB ajustável",
-          "preco": 89.90,
-          "preco_original": 129.90,
+          "preco": 89.9,
+          "preco_original": 129.9,
           "desconto_pct": 31,
           "imagem": "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=400&h=400&fit=crop",
           "link_afiliado": "https://shopee.com.br/exemplo",
           "loja": "shopee",
-          "tags": ["acessorios", "pc"],
+          "tags": [
+            "acessorios",
+            "pc"
+          ],
           "destaque": false,
           "novo": false
         }
@@ -178,76 +218,89 @@
         {
           "id": "tech-001",
           "nome": "Fone de ouvido TWS com cancelamento de ruído",
-          "preco": 199.90,
-          "preco_original": 299.90,
+          "preco": 199.9,
+          "preco_original": 299.9,
           "desconto_pct": 33,
           "imagem": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop",
           "link_afiliado": "https://amzn.to/exemplo",
           "loja": "amazon",
-          "tags": ["audio"],
+          "tags": [
+            "audio"
+          ],
           "destaque": true,
           "novo": false
         },
         {
           "id": "tech-002",
           "nome": "Carregador turbo 65W GaN 3 portas USB-C",
-          "preco": 89.90,
-          "preco_original": 129.90,
+          "preco": 89.9,
+          "preco_original": 129.9,
           "desconto_pct": 31,
           "imagem": "https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=400&h=400&fit=crop",
           "link_afiliado": "https://shopee.com.br/exemplo",
           "loja": "shopee",
-          "tags": ["carregadores"],
+          "tags": [
+            "carregadores"
+          ],
           "destaque": false,
           "novo": true
         },
         {
           "id": "tech-003",
           "nome": "Câmera de ação 4K com estabilizador",
-          "preco": 349.90,
-          "preco_original": 499.90,
+          "preco": 349.9,
+          "preco_original": 499.9,
           "desconto_pct": 30,
           "imagem": "https://images.unsplash.com/photo-1516724562728-afc824a36e84?w=400&h=400&fit=crop",
           "link_afiliado": "https://amzn.to/exemplo",
           "loja": "amazon",
-          "tags": ["cameras"],
+          "tags": [
+            "cameras"
+          ],
           "destaque": true,
           "novo": false
         },
         {
           "id": "tech-004",
           "nome": "Suporte articulado monitor + webcam desk",
-          "preco": 79.90,
+          "preco": 79.9,
           "imagem": "https://images.unsplash.com/photo-1593642632532-3e22e7c48f0b?w=400&h=400&fit=crop",
           "link_afiliado": "https://shopee.com.br/exemplo",
           "loja": "shopee",
-          "tags": ["acessorios"],
+          "tags": [
+            "acessorios"
+          ],
           "destaque": false,
           "novo": false
         },
         {
           "id": "tech-005",
           "nome": "Hub USB-C 7 em 1 com HDMI 4K e ethernet",
-          "preco": 149.90,
-          "preco_original": 199.90,
+          "preco": 149.9,
+          "preco_original": 199.9,
           "desconto_pct": 25,
           "imagem": "https://images.unsplash.com/photo-1588702547923-7093a6c3ba33?w=400&h=400&fit=crop",
           "link_afiliado": "https://amzn.to/exemplo",
           "loja": "amazon",
-          "tags": ["acessorios", "carregadores"],
+          "tags": [
+            "acessorios",
+            "carregadores"
+          ],
           "destaque": false,
           "novo": true
         },
         {
           "id": "tech-006",
           "nome": "Caixa de som Bluetooth portátil 20W à prova d'água",
-          "preco": 159.90,
-          "preco_original": 219.90,
+          "preco": 159.9,
+          "preco_original": 219.9,
           "desconto_pct": 27,
           "imagem": "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=400&h=400&fit=crop",
           "link_afiliado": "https://amzn.to/exemplo",
           "loja": "amazon",
-          "tags": ["audio"],
+          "tags": [
+            "audio"
+          ],
           "destaque": true,
           "novo": false
         }
@@ -263,74 +316,86 @@
         {
           "id": "fitness-001",
           "nome": "Kit halter emborrachado 2x5kg + 2x3kg",
-          "preco": 149.90,
-          "preco_original": 199.90,
+          "preco": 149.9,
+          "preco_original": 199.9,
           "desconto_pct": 25,
           "imagem": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=400&fit=crop",
           "link_afiliado": "https://amzn.to/exemplo",
           "loja": "amazon",
-          "tags": ["musculacao"],
+          "tags": [
+            "musculacao"
+          ],
           "destaque": true,
           "novo": false
         },
         {
           "id": "fitness-002",
           "nome": "Tapete de yoga antiderrapante 6mm dupla face",
-          "preco": 89.90,
-          "preco_original": 119.90,
+          "preco": 89.9,
+          "preco_original": 119.9,
           "desconto_pct": 25,
           "imagem": "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400&h=400&fit=crop",
           "link_afiliado": "https://shopee.com.br/exemplo",
           "loja": "shopee",
-          "tags": ["yoga"],
+          "tags": [
+            "yoga"
+          ],
           "destaque": false,
           "novo": false
         },
         {
           "id": "fitness-003",
           "nome": "Corda de pular com contador digital smart",
-          "preco": 49.90,
+          "preco": 49.9,
           "imagem": "https://images.unsplash.com/photo-1434596922112-19c563067271?w=400&h=400&fit=crop",
           "link_afiliado": "https://shopee.com.br/exemplo",
           "loja": "shopee",
-          "tags": ["cardio"],
+          "tags": [
+            "cardio"
+          ],
           "destaque": true,
           "novo": true
         },
         {
           "id": "fitness-004",
           "nome": "Whey protein concentrado 1kg baunilha",
-          "preco": 129.90,
-          "preco_original": 179.90,
+          "preco": 129.9,
+          "preco_original": 179.9,
           "desconto_pct": 28,
           "imagem": "https://images.unsplash.com/photo-1593095948071-474c5cc2989d?w=400&h=400&fit=crop",
           "link_afiliado": "https://amzn.to/exemplo",
           "loja": "amazon",
-          "tags": ["suplementos"],
+          "tags": [
+            "suplementos"
+          ],
           "destaque": false,
           "novo": false
         },
         {
           "id": "fitness-005",
           "nome": "Legging fitness cintura alta compressão",
-          "preco": 79.90,
-          "preco_original": 109.90,
+          "preco": 79.9,
+          "preco_original": 109.9,
           "desconto_pct": 27,
           "imagem": "https://images.unsplash.com/photo-1538805060514-97d9cc17730c?w=400&h=400&fit=crop",
           "link_afiliado": "https://shopee.com.br/exemplo",
           "loja": "shopee",
-          "tags": ["vestuario"],
+          "tags": [
+            "vestuario"
+          ],
           "destaque": true,
           "novo": false
         },
         {
           "id": "fitness-006",
           "nome": "Garrafa squeeze 1L com marcação de hidratação",
-          "preco": 39.90,
+          "preco": 39.9,
           "imagem": "https://images.unsplash.com/photo-1550505101-4f5e37fa5e5f?w=400&h=400&fit=crop",
           "link_afiliado": "https://amzn.to/exemplo",
           "loja": "amazon",
-          "tags": ["cardio"],
+          "tags": [
+            "cardio"
+          ],
           "destaque": false,
           "novo": true
         }
@@ -346,74 +411,89 @@
         {
           "id": "moda-001",
           "nome": "Blusa oversized tie-dye verão unissex",
-          "preco": 39.90,
+          "preco": 39.9,
           "imagem": "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?w=400&h=400&fit=crop",
           "link_afiliado": "https://shopee.com.br/exemplo",
           "loja": "shopee",
-          "tags": ["masculino", "feminino"],
+          "tags": [
+            "masculino",
+            "feminino"
+          ],
           "destaque": true,
           "novo": false
         },
         {
           "id": "moda-002",
           "nome": "Calça jogger moletom slim fit",
-          "preco": 69.90,
-          "preco_original": 99.90,
+          "preco": 69.9,
+          "preco_original": 99.9,
           "desconto_pct": 30,
           "imagem": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=400&fit=crop",
           "link_afiliado": "https://shopee.com.br/exemplo",
           "loja": "shopee",
-          "tags": ["masculino"],
+          "tags": [
+            "masculino"
+          ],
           "destaque": false,
           "novo": false
         },
         {
           "id": "moda-003",
           "nome": "Moletom canguru com capuz algodão premium",
-          "preco": 89.90,
-          "preco_original": 129.90,
+          "preco": 89.9,
+          "preco_original": 129.9,
           "desconto_pct": 31,
           "imagem": "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&h=400&fit=crop",
           "link_afiliado": "https://amzn.to/exemplo",
           "loja": "amazon",
-          "tags": ["masculino", "feminino"],
+          "tags": [
+            "masculino",
+            "feminino"
+          ],
           "destaque": true,
           "novo": false
         },
         {
           "id": "moda-004",
           "nome": "Vestido midi floral verão — tamanhos P ao GG",
-          "preco": 59.90,
+          "preco": 59.9,
           "imagem": "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=400&h=400&fit=crop",
           "link_afiliado": "https://shopee.com.br/exemplo",
           "loja": "shopee",
-          "tags": ["feminino"],
+          "tags": [
+            "feminino"
+          ],
           "destaque": false,
           "novo": true
         },
         {
           "id": "moda-005",
           "nome": "Tênis casual unissex sola plataforma",
-          "preco": 119.90,
-          "preco_original": 159.90,
+          "preco": 119.9,
+          "preco_original": 159.9,
           "desconto_pct": 25,
           "imagem": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop",
           "link_afiliado": "https://shopee.com.br/exemplo",
           "loja": "shopee",
-          "tags": ["calcados"],
+          "tags": [
+            "calcados"
+          ],
           "destaque": true,
           "novo": false
         },
         {
           "id": "moda-006",
           "nome": "Relógio feminino analógico caixa dourada",
-          "preco": 99.90,
-          "preco_original": 149.90,
+          "preco": 99.9,
+          "preco_original": 149.9,
           "desconto_pct": 33,
           "imagem": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop",
           "link_afiliado": "https://amzn.to/exemplo",
           "loja": "amazon",
-          "tags": ["acessorios", "feminino"],
+          "tags": [
+            "acessorios",
+            "feminino"
+          ],
           "destaque": false,
           "novo": false
         }
@@ -429,77 +509,557 @@
         {
           "id": "casa-001",
           "nome": "Luminária LED de mesa touch recarregável",
-          "preco": 59.90,
-          "preco_original": 89.90,
+          "preco": 59.9,
+          "preco_original": 89.9,
           "desconto_pct": 33,
           "imagem": "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=400&h=400&fit=crop",
           "link_afiliado": "https://amzn.to/exemplo",
           "loja": "amazon",
-          "tags": ["decoracao"],
+          "tags": [
+            "decoracao"
+          ],
           "destaque": true,
           "novo": false
         },
         {
           "id": "casa-002",
           "nome": "Suporte articulado para celular — mesa e cama",
-          "preco": 29.90,
+          "preco": 29.9,
           "imagem": "https://images.unsplash.com/photo-1583394293214-0b7b9ae04b3d?w=400&h=400&fit=crop",
           "link_afiliado": "https://shopee.com.br/exemplo",
           "loja": "shopee",
-          "tags": ["organizacao"],
+          "tags": [
+            "organizacao"
+          ],
           "destaque": false,
           "novo": false
         },
         {
           "id": "casa-003",
           "nome": "Organizador de gaveta modular 10 peças",
-          "preco": 49.90,
-          "preco_original": 69.90,
+          "preco": 49.9,
+          "preco_original": 69.9,
           "desconto_pct": 29,
           "imagem": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=400&fit=crop",
           "link_afiliado": "https://amzn.to/exemplo",
           "loja": "amazon",
-          "tags": ["organizacao"],
+          "tags": [
+            "organizacao"
+          ],
           "destaque": true,
           "novo": false
         },
         {
           "id": "casa-004",
           "nome": "Difusor de aromas elétrico ultrassônico 400ml",
-          "preco": 79.90,
-          "preco_original": 109.90,
+          "preco": 79.9,
+          "preco_original": 109.9,
           "desconto_pct": 27,
           "imagem": "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=400&h=400&fit=crop",
           "link_afiliado": "https://shopee.com.br/exemplo",
           "loja": "shopee",
-          "tags": ["decoracao"],
+          "tags": [
+            "decoracao"
+          ],
           "destaque": false,
           "novo": true
         },
         {
           "id": "casa-005",
           "nome": "Panela antiaderente 24cm cabo baquelite",
-          "preco": 89.90,
-          "preco_original": 129.90,
+          "preco": 89.9,
+          "preco_original": 129.9,
           "desconto_pct": 31,
           "imagem": "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=400&fit=crop",
           "link_afiliado": "https://amzn.to/exemplo",
           "loja": "amazon",
-          "tags": ["cozinha"],
+          "tags": [
+            "cozinha"
+          ],
           "destaque": true,
           "novo": false
         },
         {
           "id": "casa-006",
           "nome": "Vassourinha elétrica portátil recarregável",
-          "preco": 99.90,
-          "preco_original": 149.90,
+          "preco": 99.9,
+          "preco_original": 149.9,
           "desconto_pct": 33,
           "imagem": "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=400&h=400&fit=crop",
           "link_afiliado": "https://shopee.com.br/exemplo",
           "loja": "shopee",
-          "tags": ["limpeza"],
+          "tags": [
+            "limpeza"
+          ],
           "destaque": false,
+          "novo": false
+        }
+      ]
+    },
+    {
+      "nome": "Estética",
+      "slug": "estetica",
+      "emoji": "💄",
+      "cor": "#EC4899",
+      "descricao": "Skincare, perfumes e cuidados pessoais",
+      "produtos": [
+        {
+          "id": "estetica-001",
+          "nome": "Kit skincare vitamina C — sérum + hidratante + protetor",
+          "preco": 129.9,
+          "preco_original": 189.9,
+          "desconto_pct": 32,
+          "imagem": "https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=400&h=400&fit=crop",
+          "link_afiliado": "https://amzn.to/estetica01",
+          "loja": "amazon",
+          "tags": [
+            "skincare",
+            "vitamina-c",
+            "rosto"
+          ],
+          "destaque": true,
+          "novo": false
+        },
+        {
+          "id": "estetica-002",
+          "nome": "Perfume importado feminino 100ml floral",
+          "preco": 189.9,
+          "preco_original": 259.9,
+          "desconto_pct": 27,
+          "imagem": "https://images.unsplash.com/photo-1541643600914-78b084683702?w=400&h=400&fit=crop",
+          "link_afiliado": "https://amzn.to/estetica02",
+          "loja": "amazon",
+          "tags": [
+            "perfume",
+            "feminino",
+            "importado"
+          ],
+          "destaque": true,
+          "novo": false
+        },
+        {
+          "id": "estetica-003",
+          "nome": "Escova secadora cerâmica 1200W com íon",
+          "preco": 99.9,
+          "preco_original": 149.9,
+          "desconto_pct": 33,
+          "imagem": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400&h=400&fit=crop",
+          "link_afiliado": "https://shopee.com.br/estetica03",
+          "loja": "shopee",
+          "tags": [
+            "cabelo",
+            "ferramentas",
+            "feminino"
+          ],
+          "destaque": false,
+          "novo": true
+        },
+        {
+          "id": "estetica-004",
+          "nome": "Paleta de sombras 18 cores matte e cintilante",
+          "preco": 59.9,
+          "preco_original": 89.9,
+          "desconto_pct": 33,
+          "imagem": "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=400&h=400&fit=crop",
+          "link_afiliado": "https://shopee.com.br/estetica04",
+          "loja": "shopee",
+          "tags": [
+            "maquiagem",
+            "olhos",
+            "feminino"
+          ],
+          "destaque": false,
+          "novo": false
+        },
+        {
+          "id": "estetica-005",
+          "nome": "Creme hidratante corporal manteiga de karité 400ml",
+          "preco": 44.9,
+          "preco_original": 64.9,
+          "desconto_pct": 31,
+          "imagem": "https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?w=400&h=400&fit=crop",
+          "link_afiliado": "https://amzn.to/estetica05",
+          "loja": "amazon",
+          "tags": [
+            "skincare",
+            "corporal",
+            "hidratante"
+          ],
+          "destaque": true,
+          "novo": true
+        }
+      ]
+    },
+    {
+      "nome": "Eletrodomésticos",
+      "slug": "eletrodomesticos",
+      "emoji": "⚡",
+      "cor": "#e09c0b",
+      "descricao": "Geladeiras, fogões e utilidades pro lar",
+      "produtos": [
+        {
+          "id": "eletrodomesticos-001",
+          "nome": "Airfryer digital 4L 1500W 12 funções pré-definidas",
+          "preco": 349.9,
+          "preco_original": 499.9,
+          "desconto_pct": 30,
+          "imagem": "https://images.unsplash.com/photo-1648297171834-9d6d24a51562?w=400&h=400&fit=crop",
+          "link_afiliado": "https://amzn.to/eletro01",
+          "loja": "amazon",
+          "tags": [
+            "cozinha",
+            "fritadeira",
+            "saudavel"
+          ],
+          "destaque": true,
+          "novo": false
+        },
+        {
+          "id": "eletrodomesticos-002",
+          "nome": "Liquidificador 1000W 4 velocidades copo de vidro",
+          "preco": 159.9,
+          "preco_original": 219.9,
+          "desconto_pct": 27,
+          "imagem": "https://images.unsplash.com/photo-1570222094114-d054a817e56b?w=400&h=400&fit=crop",
+          "link_afiliado": "https://amzn.to/eletro02",
+          "loja": "magalu",
+          "tags": [
+            "cozinha",
+            "liquidificador",
+            "preparo"
+          ],
+          "destaque": false,
+          "novo": false
+        },
+        {
+          "id": "eletrodomesticos-003",
+          "nome": "Cafeteira espresso 19 bar com vaporizador de leite",
+          "preco": 499.9,
+          "preco_original": 699.9,
+          "desconto_pct": 29,
+          "imagem": "https://images.unsplash.com/photo-1510591509098-f4fdc6d0ff04?w=400&h=400&fit=crop",
+          "link_afiliado": "https://amzn.to/eletro03",
+          "loja": "amazon",
+          "tags": [
+            "cafe",
+            "cozinha",
+            "espresso"
+          ],
+          "destaque": true,
+          "novo": true
+        },
+        {
+          "id": "eletrodomesticos-004",
+          "nome": "Micro-ondas 20L 700W com grill embutido",
+          "preco": 389.9,
+          "preco_original": 549.9,
+          "desconto_pct": 29,
+          "imagem": "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=400&h=400&fit=crop",
+          "link_afiliado": "https://amzn.to/eletro04",
+          "loja": "casasbahia",
+          "tags": [
+            "cozinha",
+            "micro-ondas",
+            "grill"
+          ],
+          "destaque": false,
+          "novo": false
+        },
+        {
+          "id": "eletrodomesticos-005",
+          "nome": "Aspirador robô com mapeamento inteligente e Wi-Fi",
+          "preco": 799.9,
+          "preco_original": 1099.9,
+          "desconto_pct": 27,
+          "imagem": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=400&fit=crop",
+          "link_afiliado": "https://amzn.to/eletro05",
+          "loja": "amazon",
+          "tags": [
+            "limpeza",
+            "robo",
+            "smart"
+          ],
+          "destaque": true,
+          "novo": true
+        }
+      ]
+    },
+    {
+      "nome": "Livros",
+      "slug": "livros",
+      "emoji": "📚",
+      "cor": "#F59E0B",
+      "descricao": "Best-sellers, HQs e boxes exclusivos",
+      "produtos": [
+        {
+          "id": "livros-001",
+          "nome": "Box Harry Potter — edição especial capa dura 7 volumes",
+          "preco": 299.9,
+          "preco_original": 399.9,
+          "desconto_pct": 25,
+          "imagem": "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&h=400&fit=crop",
+          "link_afiliado": "https://amzn.to/livros01",
+          "loja": "amazon",
+          "tags": [
+            "box",
+            "fantasia",
+            "best-seller"
+          ],
+          "destaque": true,
+          "novo": false
+        },
+        {
+          "id": "livros-002",
+          "nome": "Hábitos Atômicos — James Clear (capa dura)",
+          "preco": 49.9,
+          "preco_original": 69.9,
+          "desconto_pct": 29,
+          "imagem": "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=400&fit=crop",
+          "link_afiliado": "https://amzn.to/livros02",
+          "loja": "amazon",
+          "tags": [
+            "autoajuda",
+            "best-seller",
+            "habitos"
+          ],
+          "destaque": true,
+          "novo": false
+        },
+        {
+          "id": "livros-003",
+          "nome": "Box Liga da Justiça — DC coleção completa HQ",
+          "preco": 189.9,
+          "preco_original": 249.9,
+          "desconto_pct": 24,
+          "imagem": "https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?w=400&h=400&fit=crop",
+          "link_afiliado": "https://amzn.to/livros03",
+          "loja": "amazon",
+          "tags": [
+            "hq",
+            "box",
+            "dc"
+          ],
+          "destaque": false,
+          "novo": false
+        },
+        {
+          "id": "livros-004",
+          "nome": "O Poder do Agora — Eckhart Tolle (nova edição)",
+          "preco": 39.9,
+          "imagem": "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&h=400&fit=crop",
+          "link_afiliado": "https://amzn.to/livros04",
+          "loja": "amazon",
+          "tags": [
+            "autoajuda",
+            "espiritualidade",
+            "best-seller"
+          ],
+          "destaque": false,
+          "novo": true
+        },
+        {
+          "id": "livros-005",
+          "nome": "Sapiens — Uma Breve História da Humanidade (capa dura)",
+          "preco": 54.9,
+          "preco_original": 79.9,
+          "desconto_pct": 31,
+          "imagem": "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=400&h=400&fit=crop",
+          "link_afiliado": "https://amzn.to/livros05",
+          "loja": "amazon",
+          "tags": [
+            "historia",
+            "best-seller",
+            "ciencia"
+          ],
+          "destaque": true,
+          "novo": false
+        }
+      ]
+    },
+    {
+      "nome": "Tênis",
+      "slug": "tenis",
+      "emoji": "👟",
+      "cor": "#EF4444",
+      "descricao": "Sneakers, corrida e lifestyle",
+      "produtos": [
+        {
+          "id": "tenis-001",
+          "nome": "Tênis de corrida masculino amortecimento extra",
+          "preco": 299.9,
+          "preco_original": 399.9,
+          "desconto_pct": 25,
+          "imagem": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop",
+          "link_afiliado": "https://amzn.to/tenis01",
+          "loja": "centauro",
+          "tags": [
+            "corrida",
+            "masculino",
+            "esportivo"
+          ],
+          "destaque": true,
+          "novo": false
+        },
+        {
+          "id": "tenis-002",
+          "nome": "Sneaker chunky feminino plataforma 4cm",
+          "preco": 199.9,
+          "preco_original": 269.9,
+          "desconto_pct": 26,
+          "imagem": "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=400&h=400&fit=crop",
+          "link_afiliado": "https://shopee.com.br/tenis02",
+          "loja": "shopee",
+          "tags": [
+            "lifestyle",
+            "feminino",
+            "plataforma"
+          ],
+          "destaque": false,
+          "novo": true
+        },
+        {
+          "id": "tenis-003",
+          "nome": "Tênis casual slip-on unissex tecido elástico",
+          "preco": 119.9,
+          "preco_original": 169.9,
+          "desconto_pct": 29,
+          "imagem": "https://images.unsplash.com/photo-1515955656352-a1fa3ffcd111?w=400&h=400&fit=crop",
+          "link_afiliado": "https://shopee.com.br/tenis03",
+          "loja": "shopee",
+          "tags": [
+            "lifestyle",
+            "casual",
+            "unissex"
+          ],
+          "destaque": true,
+          "novo": false
+        },
+        {
+          "id": "tenis-004",
+          "nome": "Tênis trail running impermeável sola vibram",
+          "preco": 379.9,
+          "preco_original": 499.9,
+          "desconto_pct": 24,
+          "imagem": "https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=400&h=400&fit=crop",
+          "link_afiliado": "https://amzn.to/tenis04",
+          "loja": "amazon",
+          "tags": [
+            "corrida",
+            "trilha",
+            "esportivo"
+          ],
+          "destaque": false,
+          "novo": false
+        },
+        {
+          "id": "tenis-005",
+          "nome": "Sneaker retrô couro legítimo low-top unissex",
+          "preco": 349.9,
+          "preco_original": 459.9,
+          "desconto_pct": 24,
+          "imagem": "https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=400&h=400&fit=crop",
+          "link_afiliado": "https://amzn.to/tenis05",
+          "loja": "amazon",
+          "tags": [
+            "lifestyle",
+            "couro",
+            "unissex"
+          ],
+          "destaque": true,
+          "novo": true
+        }
+      ]
+    },
+    {
+      "nome": "Mercado",
+      "slug": "mercado",
+      "emoji": "🛒",
+      "cor": "#10B981",
+      "descricao": "Bebidas, alimentos e itens essenciais",
+      "produtos": [
+        {
+          "id": "mercado-001",
+          "nome": "Pack energético 473ml — caixa com 12 unidades",
+          "preco": 79.9,
+          "preco_original": 99.9,
+          "desconto_pct": 20,
+          "imagem": "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=400&h=400&fit=crop",
+          "link_afiliado": "https://amzn.to/mercado01",
+          "loja": "amazon",
+          "tags": [
+            "bebidas",
+            "energetico",
+            "pack"
+          ],
+          "destaque": true,
+          "novo": false
+        },
+        {
+          "id": "mercado-002",
+          "nome": "Café especial em grãos 1kg torrado artesanal",
+          "preco": 64.9,
+          "preco_original": 89.9,
+          "desconto_pct": 28,
+          "imagem": "https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=400&h=400&fit=crop",
+          "link_afiliado": "https://amzn.to/mercado02",
+          "loja": "amazon",
+          "tags": [
+            "cafe",
+            "bebidas",
+            "artesanal"
+          ],
+          "destaque": true,
+          "novo": false
+        },
+        {
+          "id": "mercado-003",
+          "nome": "Mix de oleaginosas premium 500g — castanhas e amêndoas",
+          "preco": 39.9,
+          "preco_original": 54.9,
+          "desconto_pct": 27,
+          "imagem": "https://images.unsplash.com/photo-1599599810769-bcde5a160d32?w=400&h=400&fit=crop",
+          "link_afiliado": "https://amzn.to/mercado03",
+          "loja": "amazon",
+          "tags": [
+            "snacks",
+            "saudavel",
+            "castanhas"
+          ],
+          "destaque": false,
+          "novo": true
+        },
+        {
+          "id": "mercado-004",
+          "nome": "Whey bar caixa 12 unidades sabor chocolate",
+          "preco": 59.9,
+          "preco_original": 79.9,
+          "desconto_pct": 25,
+          "imagem": "https://images.unsplash.com/photo-1506802913710-0a4d78f58736?w=400&h=400&fit=crop",
+          "link_afiliado": "https://shopee.com.br/mercado04",
+          "loja": "shopee",
+          "tags": [
+            "snacks",
+            "proteina",
+            "saudavel"
+          ],
+          "destaque": false,
+          "novo": false
+        },
+        {
+          "id": "mercado-005",
+          "nome": "Azeite extravirgem português 750ml acidez 0,2%",
+          "preco": 49.9,
+          "preco_original": 69.9,
+          "desconto_pct": 29,
+          "imagem": "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=400&h=400&fit=crop",
+          "link_afiliado": "https://amzn.to/mercado05",
+          "loja": "amazon",
+          "tags": [
+            "azeite",
+            "cozinha",
+            "importado"
+          ],
+          "destaque": true,
           "novo": false
         }
       ]

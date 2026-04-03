@@ -21,9 +21,11 @@ interface FilterPanelProps {
   tagsDaCategoria: string[]
   precoMaxTotal: number
   cor: string
+  // CORREÇÃO TS: Prop adicionada para receber o array dinâmico do CategoriaContent
+  marketplacesDisponiveis: string[] 
 }
 
-function FilterBody({ filtros, onFiltrosChange, tagsDaCategoria, precoMaxTotal, cor }: FilterPanelProps) {
+function FilterBody({ filtros, onFiltrosChange, tagsDaCategoria, precoMaxTotal, cor, marketplacesDisponiveis }: FilterPanelProps) {
   const precoMin = filtros.precoMin ?? 0
   const precoMax = filtros.precoMax ?? precoMaxTotal
 
@@ -43,34 +45,13 @@ function FilterBody({ filtros, onFiltrosChange, tagsDaCategoria, precoMaxTotal, 
     onFiltrosChange({ ...filtros, tags: next.length > 0 ? next : undefined })
   }
 
-  function setOrdenar(ord: FiltrosProduto['ordenar']) {
-    onFiltrosChange({ ...filtros, ordenar: filtros.ordenar === ord ? undefined : ord })
-  }
+  // UX FIX: Filtra o array master de lojas (LOJAS) para retornar apenas as que vieram da API/banco
+  const lojasAtivas = LOJAS.filter(loja => marketplacesDisponiveis.includes(loja))
 
   return (
-    <div className="flex flex-col gap-5 p-4">
-      {/* Ordenar */}
+    <div className="flex flex-col gap-8 p-6">
       <div>
-        <p className="mb-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">Ordenar</p>
-        <div className="flex flex-wrap gap-2">
-          {(['menor-preco', 'maior-desconto', 'az'] as const).map(ord => {
-            const labels = { 'menor-preco': 'Menor preço', 'maior-desconto': 'Maior desconto', az: 'A-Z' }
-            return (
-              <FilterChip
-                key={ord}
-                label={labels[ord]}
-                ativo={filtros.ordenar === ord}
-                cor={cor}
-                onClick={() => setOrdenar(ord)}
-              />
-            )
-          })}
-        </div>
-      </div>
-
-      {/* Faixa de preço */}
-      <div>
-        <p className="mb-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">Faixa de preço</p>
+        <p className="mb-4 text-[11px] font-black uppercase tracking-[0.15em] text-[#A1A1AA]">Faixa de preço</p>
         <PriceRangeSlider
           min={0}
           max={precoMaxTotal}
@@ -86,26 +67,27 @@ function FilterBody({ filtros, onFiltrosChange, tagsDaCategoria, precoMaxTotal, 
         />
       </div>
 
-      {/* Lojas */}
-      <div>
-        <p className="mb-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">Loja</p>
-        <div className="flex flex-wrap gap-2">
-          {LOJAS.map(loja => (
-            <FilterChip
-              key={loja}
-              label={LOJA_LABEL[loja]}
-              ativo={(filtros.lojas ?? []).includes(loja)}
-              cor={cor}
-              onClick={() => toggleLoja(loja)}
-            />
-          ))}
+      {/* Condicional para esconder a seção inteira se não houver lojas */}
+      {lojasAtivas.length > 0 && (
+        <div>
+          <p className="mb-4 text-[11px] font-black uppercase tracking-[0.15em] text-[#A1A1AA]">Marketplace</p>
+          <div className="flex flex-wrap gap-2">
+            {lojasAtivas.map(loja => (
+              <FilterChip
+                key={loja}
+                label={LOJA_LABEL[loja]}
+                ativo={(filtros.lojas ?? []).includes(loja)}
+                cor={cor}
+                onClick={() => toggleLoja(loja)}
+              />
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Tags da categoria */}
       {tagsDaCategoria.length > 0 && (
         <div>
-          <p className="mb-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">Filtrar por</p>
+          <p className="mb-4 text-[11px] font-black uppercase tracking-[0.15em] text-[#A1A1AA]">Filtrar por</p>
           <div className="flex flex-wrap gap-2">
             {tagsDaCategoria.map(tag => (
               <FilterChip
@@ -120,12 +102,10 @@ function FilterBody({ filtros, onFiltrosChange, tagsDaCategoria, precoMaxTotal, 
         </div>
       )}
 
-      {/* Limpar */}
       <Button
         variant="outline"
-        size="sm"
         onClick={() => onFiltrosChange({})}
-        className="mt-2 border-card-border text-muted-foreground"
+        className="mt-2 w-full h-11 border-[#2A2A35] bg-transparent text-[#A1A1AA] hover:bg-[#2A2A35] hover:text-white transition-all rounded-xl font-bold text-xs"
       >
         Limpar filtros
       </Button>
@@ -138,34 +118,34 @@ export default function FilterPanel(props: FilterPanelProps) {
 
   return (
     <>
-      {/* Mobile: floating button + Sheet */}
-      <div className="lg:hidden fixed bottom-20 right-4 z-30">
+      <div className="md:hidden fixed bottom-6 right-6 z-40">
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
             <Button
-              style={{ backgroundColor: props.cor }}
-              className="rounded-full shadow-lg text-white gap-2"
+              style={{ backgroundColor: props.cor || '#F97316' }}
+              className="rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.4)] h-12 px-5 font-bold text-white flex items-center gap-2 hover:scale-105 transition-all"
             >
-              <SlidersHorizontal size={16} />
+              <SlidersHorizontal size={18} />
               Filtrar
             </Button>
           </SheetTrigger>
-          <SheetContent side="bottom" className="bg-surface border-card-border rounded-t-2xl max-h-[80vh] overflow-y-auto">
-            <SheetHeader className="px-4 pt-4">
-              <SheetTitle className="text-white text-left">Filtros</SheetTitle>
+          <SheetContent side="bottom" className="bg-[#1A1A24] border-t border-[#2A2A35] rounded-t-3xl max-h-[85vh] overflow-y-auto px-0">
+            <SheetHeader className="px-6 pt-6 pb-2 border-b border-[#2A2A35]">
+              <SheetTitle className="text-white text-lg font-black text-left">Filtros</SheetTitle>
             </SheetHeader>
             <FilterBody {...props} />
           </SheetContent>
         </Sheet>
       </div>
 
-      {/* Desktop: static sidebar */}
-      <aside className="hidden lg:block w-[220px] shrink-0">
-        <div className="sticky top-[100px] rounded-2xl bg-card-bg border border-card-border">
-          <p className="px-4 pt-4 text-xs font-bold uppercase tracking-wide text-white">Filtros</p>
+      <div className="hidden md:block w-[280px] shrink-0">
+        <div className="sticky top-24 rounded-3xl bg-[#1A1A24] border border-[#2A2A35] overflow-hidden shadow-sm">
+          <div className="px-6 py-5 border-b border-[#2A2A35]">
+            <p className="text-sm font-black uppercase tracking-widest text-white">Filtros</p>
+          </div>
           <FilterBody {...props} />
         </div>
-      </aside>
+      </div>
     </>
   )
 }

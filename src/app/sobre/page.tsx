@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import Header from '@/components/Header'
-import BottomNav from '@/components/BottomNav'
 
 export const metadata: Metadata = {
   title: 'Sobre — Achadinhos',
@@ -64,8 +63,6 @@ export default function SobrePage() {
           </div>
         </div>
       </div>
-
-      <BottomNav />
     </div>
   )
 }

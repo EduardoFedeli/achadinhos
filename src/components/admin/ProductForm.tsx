@@ -71,6 +71,8 @@ export default function ProductForm({ categorias, produto, onSave, onCancel }: P
       tags: tags.length > 0 ? tags : undefined,
       destaque,
       novo,
+      // Se já existir mantém, caso contrário carimba a data de agora (criação).
+      createdAt: produto?.createdAt ?? new Date().toISOString(),
     }
 
     const url = isEdit ? `/api/produtos/${produto!.id}` : '/api/produtos'
@@ -92,89 +94,142 @@ export default function ProductForm({ categorias, produto, onSave, onCancel }: P
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="col-span-2">
-          <Label>Nome</Label>
-          <Input value={nome} onChange={e => setNome(e.target.value)} required />
+    <form onSubmit={handleSubmit} className="flex flex-col gap-5 text-foreground">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div className="sm:col-span-2 space-y-1.5">
+          <Label>Nome do Produto</Label>
+          <Input 
+            value={nome} 
+            onChange={e => setNome(e.target.value)} 
+            required 
+            className="bg-background border-input focus-visible:ring-primary"
+          />
         </div>
-        <div>
+        
+        <div className="space-y-1.5">
           <Label>Categoria</Label>
           <select
             value={categoriaSlug}
             onChange={e => setCategoriaSlug(e.target.value)}
-            className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
+            className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50"
             required
           >
             {categorias.map(c => (
-              <option key={c.slug} value={c.slug}>{c.nome}</option>
+              <option key={c.slug} value={c.slug} className="bg-card text-foreground">{c.nome}</option>
             ))}
           </select>
         </div>
-        <div>
+
+        <div className="space-y-1.5">
           <Label>Loja</Label>
           <select
             value={loja}
             onChange={e => setLoja(e.target.value as Loja)}
-            className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
+            className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {LOJAS.map(l => <option key={l} value={l}>{l}</option>)}
+            {LOJAS.map(l => <option key={l} value={l} className="bg-card text-foreground">{l}</option>)}
           </select>
         </div>
-        <div>
+
+        <div className="space-y-1.5">
           <Label>Preço atual (R$)</Label>
-          <Input type="number" step="0.01" value={preco} onChange={e => setPreco(e.target.value)} required />
+          <Input 
+            type="number" 
+            step="0.01" 
+            value={preco} 
+            onChange={e => setPreco(e.target.value)} 
+            required 
+            className="bg-background border-input"
+          />
         </div>
-        <div>
+
+        <div className="space-y-1.5">
           <Label>Preço original (R$)</Label>
-          <Input type="number" step="0.01" value={precoOriginal} onChange={e => handlePrecoOriginalChange(e.target.value)} />
+          <Input 
+            type="number" 
+            step="0.01" 
+            value={precoOriginal} 
+            onChange={e => handlePrecoOriginalChange(e.target.value)} 
+            className="bg-background border-input"
+          />
         </div>
-        <div>
+
+        <div className="space-y-1.5">
           <Label>Desconto %</Label>
-          <Input type="number" value={desconto} onChange={e => setDesconto(e.target.value)} />
+          <Input 
+            type="number" 
+            value={desconto} 
+            onChange={e => setDesconto(e.target.value)} 
+            className="bg-background border-input"
+          />
         </div>
-        <div className="col-span-2">
+
+        <div className="sm:col-span-2 space-y-1.5">
           <Label>URL da imagem</Label>
-          <div className="flex gap-2">
-            <Input value={imagem} onChange={e => setImagem(e.target.value)} placeholder="https://..." />
+          <div className="flex gap-3 items-center">
+            <Input 
+              value={imagem} 
+              onChange={e => setImagem(e.target.value)} 
+              placeholder="https://..." 
+              className="bg-background border-input flex-1"
+            />
             {imagem && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={imagem} alt="" className="h-10 w-10 rounded object-cover shrink-0" />
+              <img src={imagem} alt="" className="h-10 w-10 rounded-md object-cover border border-border shrink-0" />
             )}
           </div>
         </div>
-        <div className="col-span-2">
+
+        <div className="sm:col-span-2 space-y-1.5">
           <Label>Link afiliado</Label>
-          <Input value={linkAfiliado} onChange={e => setLinkAfiliado(e.target.value)} placeholder="https://amzn.to/..." required />
+          <Input 
+            value={linkAfiliado} 
+            onChange={e => setLinkAfiliado(e.target.value)} 
+            placeholder="https://amzn.to/..." 
+            required 
+            className="bg-background border-input"
+          />
         </div>
-        <div className="col-span-2">
-          <Label>Tags (Enter para adicionar)</Label>
+
+        <div className="sm:col-span-2 space-y-1.5">
+          <Label>Tags (Aperte Enter para adicionar)</Label>
           <Input
             value={tagInput}
             onChange={e => setTagInput(e.target.value)}
             onKeyDown={addTag}
-            placeholder="cachorro, gato..."
+            placeholder="Ex: smartphone, custo-beneficio..."
+            className="bg-background border-input"
           />
-          <div className="mt-2 flex flex-wrap gap-1">
+          <div className="mt-2 flex flex-wrap gap-2">
             {tags.map(tag => (
-              <button key={tag} type="button" onClick={() => removeTag(tag)} className="rounded-full bg-gray-100 px-2 py-0.5 text-xs hover:bg-red-100">
+              <button 
+                key={tag} 
+                type="button" 
+                onClick={() => removeTag(tag)} 
+                className="flex items-center gap-1 rounded-full bg-secondary border border-border px-3 py-1 text-xs font-medium text-secondary-foreground transition-colors hover:bg-destructive hover:text-destructive-foreground hover:border-destructive"
+              >
                 {tag} ✕
               </button>
             ))}
           </div>
         </div>
-        <div className="flex items-center gap-2">
+
+        <div className="flex items-center gap-3 bg-secondary/30 p-3 rounded-lg border border-border">
           <Switch id="destaque" checked={destaque} onCheckedChange={setDestaque} />
-          <Label htmlFor="destaque">Destaque</Label>
+          <Label htmlFor="destaque" className="cursor-pointer">Destaque na vitrine</Label>
         </div>
-        <div className="flex items-center gap-2">
+
+        <div className="flex items-center gap-3 bg-secondary/30 p-3 rounded-lg border border-border">
           <Switch id="novo" checked={novo} onCheckedChange={setNovo} />
-          <Label htmlFor="novo">Novo</Label>
+          <Label htmlFor="novo" className="cursor-pointer">Selo de Novo</Label>
         </div>
       </div>
-      <div className="flex gap-2 pt-2">
-        <Button type="submit" disabled={loading}>{loading ? 'Salvando...' : 'Salvar'}</Button>
-        <Button type="button" variant="outline" onClick={onCancel}>Cancelar</Button>
+
+      <div className="flex justify-end gap-3 pt-4 border-t border-border mt-2">
+        <Button type="button" variant="ghost" onClick={onCancel}>Cancelar</Button>
+        <Button type="submit" disabled={loading} className="min-w-[120px]">
+          {loading ? 'Salvando...' : 'Salvar Produto'}
+        </Button>
       </div>
     </form>
   )

@@ -20,6 +20,7 @@ export interface Produto {
   tags?: string[]
   destaque: boolean
   novo?: boolean
+  createdAt?: string // <- Novo campo para rastrear a idade do produto (ISO 8601)
 }
 
 export interface Categoria {

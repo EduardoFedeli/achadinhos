@@ -1,3 +1,4 @@
+// src/components/ProductGrid.tsx
 import ProductCard from './ProductCard'
 import type { Produto, Categoria } from '@/types'
 
@@ -15,11 +16,15 @@ export default function ProductGrid({ produtos, categorias }: ProductGridProps) 
   }
 
   return (
-    <div className="grid grid-cols-2 gap-3 px-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 md:gap-4 lg:gap-5">
+    // Removidas as classes scrollbar-thin, scrollbar-thumb, etc.
+    // Adicionado scrollbar-hide (precisa do plugin tailwind-scrollbar-hide ou CSS customizado)
+    <div className="flex gap-3 md:gap-4 px-4 overflow-x-auto pb-4 pt-2 snap-x snap-mandatory scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
       {produtos.map(produto => {
         const categoria = catPorIdProduto.get(produto.id) ?? categorias[0]
         return (
-          <ProductCard key={produto.id} produto={produto} categoria={categoria} />
+          <div key={produto.id} className="min-w-[160px] md:min-w-[220px] shrink-0 snap-start">
+            <ProductCard produto={produto} categoria={categoria} />
+          </div>
         )
       })}
     </div>
