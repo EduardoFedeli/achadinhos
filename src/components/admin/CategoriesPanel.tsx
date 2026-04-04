@@ -1,125 +1,85 @@
 'use client'
 
-import { useState, FormEvent } from 'react'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import CategoryForm from './CategoryForm'
 import type { Categoria } from '@/types'
 
-interface CategoryFormProps {
-  categoria?: Categoria
-  onSave: () => void
-  onCancel: () => void
+interface CategoriesPanelProps {
+  categorias: Categoria[]
 }
 
-export default function CategoryForm({ categoria, onSave, onCancel }: CategoryFormProps) {
-  const isEdit = !!categoria
-  const [nome, setNome] = useState(categoria?.nome ?? '')
-  const [slug, setSlug] = useState(categoria?.slug ?? '')
-  const [emoji, setEmoji] = useState(categoria?.emoji ?? '')
-  const [cor, setCor] = useState(categoria?.cor ?? '#22C55E')
-  const [descricao, setDescricao] = useState(categoria?.descricao ?? '')
-  const [loading, setLoading] = useState(false)
+export default function CategoriesPanel({ categorias }: CategoriesPanelProps) {
+  const [editando, setEditando] = useState<Categoria | null>(null)
+  const [adicionando, setAdicionando] = useState(false)
+  const router = useRouter()
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault()
-    setLoading(true)
-
-    const novaCategoria = {
-      nome,
-      slug,
-      emoji,
-      cor,
-      descricao
-    }
-
-    const url = isEdit ? `/api/categorias/${categoria.slug}` : '/api/categorias'
-    const method = isEdit ? 'PUT' : 'POST'
-
-    const res = await fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(novaCategoria),
-    })
-
-    if (res.ok) {
-      onSave()
-    } else {
-      alert('Erro ao salvar categoria.')
-      setLoading(false)
-    }
+  function handleSaved() {
+    setEditando(null)
+    setAdicionando(false)
+    router.refresh()
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4 text-foreground">
-      <div className="space-y-1.5">
-        <Label>Nome da Categoria</Label>
-        <Input 
-          value={nome} 
-          onChange={e => setNome(e.target.value)} 
-          required 
-          placeholder="Ex: Moda"
-          className="bg-[#0F0F13] border-[#2A2A35] h-10" 
-        />
+    <div>
+      <div className="mb-6 flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-foreground">Categorias ({categorias.length})</h2>
+        <Button onClick={() => setAdicionando(true)}>+ Nova categoria</Button>
       </div>
 
-      <div className="space-y-1.5">
-        <Label>Slug (URL)</Label>
-        <Input 
-          value={slug} 
-          onChange={e => setSlug(e.target.value)} 
-          required 
-          placeholder="ex: moda-feminina" 
-          className="bg-[#0F0F13] border-[#2A2A35] h-10" 
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-1.5">
-          <Label>Emoji</Label>
-          <Input 
-            value={emoji} 
-            onChange={e => setEmoji(e.target.value)} 
-            required 
-            placeholder="Ex: 👗" 
-            className="bg-[#0F0F13] border-[#2A2A35] h-10" 
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label>Cor (Hex)</Label>
-          <div className="flex gap-2">
-            <Input 
-              type="color" 
-              value={cor} 
-              onChange={e => setCor(e.target.value)} 
-              className="w-12 h-10 p-1 bg-[#0F0F13] border-[#2A2A35] cursor-pointer rounded-lg" 
-            />
-            <Input 
-              value={cor} 
-              onChange={e => setCor(e.target.value)} 
-              required 
-              className="bg-[#0F0F13] border-[#2A2A35] flex-1 h-10" 
-            />
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {categorias.map(cat => (
+          <div key={cat.slug} className="rounded-2xl bg-card border border-border p-5 transition-colors hover:border-border/80 shadow-sm flex flex-col h-full">
+            <div className="flex items-center gap-3 mb-3">
+              <div
+                className="flex h-10 w-10 items-center justify-center rounded-xl text-xl shrink-0"
+                style={{ backgroundColor: `${cat.cor}22`, border: `1px solid ${cat.cor}55` }}
+              >
+                {cat.emoji}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-foreground truncate">{cat.nome}</p>
+                <p className="text-xs text-muted-foreground truncate">/{cat.slug}</p>
+              </div>
+              <div
+                className="h-3 w-3 rounded-full border border-border/50 shrink-0"
+                style={{ backgroundColor: cat.cor }}
+                title={cat.cor}
+              />
+            </div>
+            
+            <p className="text-xs text-muted-foreground mb-4 flex-1">{cat?.produtos?.length || 0} produtos cadastrados</p>
+            
+            <div className="grid grid-cols-2 gap-3 mt-auto pt-2 border-t border-border/50">
+              <Button size="sm" variant="secondary" onClick={() => setEditando(cat)} className="w-full text-foreground">
+                Editar
+              </Button>
+              <Button size="sm" variant="outline" asChild className="w-full border-border hover:bg-accent text-foreground">
+                <Link href={`/${cat.slug}`} target="_blank">
+                  Ver site →
+                </Link>
+              </Button>
+            </div>
           </div>
-        </div>
+        ))}
       </div>
 
-      <div className="space-y-1.5">
-        <Label>Descrição</Label>
-        <Input 
-          value={descricao} 
-          onChange={e => setDescricao(e.target.value)} 
-          placeholder="Breve descrição da categoria..." 
-          className="bg-[#0F0F13] border-[#2A2A35] h-10" 
-        />
-      </div>
+      <Dialog open={!!editando} onOpenChange={() => setEditando(null)}>
+        <DialogContent className="max-w-lg bg-[#0F0F13] border-[#2A2A35] text-foreground p-6">
+          <DialogHeader><DialogTitle className="text-xl font-black">Editar categoria</DialogTitle></DialogHeader>
+          {editando && <CategoryForm categoria={editando} onSave={handleSaved} onCancel={() => setEditando(null)} />}
+        </DialogContent>
+      </Dialog>
 
-      <div className="flex justify-end gap-3 pt-4 mt-2 border-t border-[#2A2A35]">
-        <Button type="button" variant="ghost" onClick={onCancel} className="h-10 px-5">Cancelar</Button>
-        <Button type="submit" disabled={loading} className="h-10 px-6 font-bold">
-          {loading ? 'Salvando...' : 'Salvar Categoria'}
-        </Button>
-      </div>
-    </form>
+      <Dialog open={adicionando} onOpenChange={setAdicionando}>
+        <DialogContent className="max-w-lg bg-[#0F0F13] border-[#2A2A35] text-foreground p-6">
+          <DialogHeader><DialogTitle className="text-xl font-black">Nova categoria</DialogTitle></DialogHeader>
+          <CategoryForm onSave={handleSaved} onCancel={() => setAdicionando(false)} />
+        </DialogContent>
+      </Dialog>
+    </div>
   )
 }
