@@ -45,6 +45,6 @@ export interface FiltrosProduto {
   precoMax?: number
   lojas?: Loja[]
   tags?: string[]
-  // NOVO: Dicionário de atributos selecionados no filtro
-  atributos?: Record<string, string[]> 
+  atributos?: Record<string, string[]>
+  ordenar?: string // <--- A LINHA QUE FALTAVA PARA SALVAR O DEPLOY
 }
