@@ -29,7 +29,8 @@ export function getProdutos(slug: string, filtros: FiltrosProduto = {}): Produto
   let produtos = [...cat.produtos]
 
   if (filtros.lojas && filtros.lojas.length > 0) {
-    produtos = produtos.filter(p => filtros.lojas!.includes(p.loja))
+    // Adicionamos o "as Loja" para acalmar o TypeScript
+    produtos = produtos.filter(p => filtros.lojas!.includes(p.loja as any))
   }
 
   if (filtros.precoMin !== undefined) {
