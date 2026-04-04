@@ -31,7 +31,6 @@ export default function ProductsTable({ produtos, categorias }: ProductsTablePro
   const [editando, setEditando] = useState<ProdutoComCategoria | null>(null)
   const [adicionando, setAdicionando] = useState(false)
   
-  // Estado para Edição em Massa e Paginação
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [isProcessingBulk, setIsProcessingBulk] = useState(false)
   const [paginaAtual, setPaginaAtual] = useState(1)
@@ -47,10 +46,8 @@ export default function ProductsTable({ produtos, categorias }: ProductsTablePro
     return diffDias > 90
   }
 
-  // Desduplicar os produtos recebidos pelas props caso eles venham replicados de várias categorias
   const produtosUnicos = Array.from(new Map(produtos.map(p => [p.id, p])).values())
 
-  // Filtragem Global
   const filtered = produtosUnicos.filter(p => {
     const matchBusca = p.nome.toLowerCase().includes(busca.toLowerCase())
     const matchCat = !filtroCategoria || p.categoriaSlug === filtroCategoria
@@ -58,11 +55,9 @@ export default function ProductsTable({ produtos, categorias }: ProductsTablePro
     return matchBusca && matchCat && matchIdade
   })
 
-  // Lógica de Paginação (Aplicada após o filtro global)
   const totalPaginas = Math.ceil(filtered.length / itensPorPagina)
   const paginatedProdutos = filtered.slice((paginaAtual - 1) * itensPorPagina, paginaAtual * itensPorPagina)
 
-  // Resetar página ao buscar ou filtrar
   const handleBusca = (valor: string) => {
     setBusca(valor)
     setPaginaAtual(1)
@@ -72,7 +67,6 @@ export default function ProductsTable({ produtos, categorias }: ProductsTablePro
     setPaginaAtual(1)
   }
 
-  // Lógica de Seleção (Aplicada APENAS aos itens visíveis na página atual)
   const paginatedIds = paginatedProdutos.map(p => p.id)
   const isAllSelected = paginatedIds.length > 0 && paginatedIds.every(id => selectedIds.includes(id))
 
@@ -93,7 +87,6 @@ export default function ProductsTable({ produtos, categorias }: ProductsTablePro
     }
   }
 
-  // Requisições
   async function handleBulkAction(action: 'delete' | 'renew') {
     if (action === 'delete' && !confirm(`Tem certeza que deseja excluir ${selectedIds.length} produtos?`)) return
     
@@ -258,32 +251,19 @@ export default function ProductsTable({ produtos, categorias }: ProductsTablePro
           </Table>
         </div>
         
-        {/* Componente de Paginação */}
         {totalPaginas > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t border-border bg-muted/10">
             <div className="text-sm text-muted-foreground hidden sm:block">
               Mostrando <span className="font-medium text-foreground">{(paginaAtual - 1) * itensPorPagina + 1}</span> até <span className="font-medium text-foreground">{Math.min(paginaAtual * itensPorPagina, filtered.length)}</span> de <span className="font-medium text-foreground">{filtered.length}</span> produtos
             </div>
             <div className="flex gap-2 w-full sm:w-auto justify-between sm:justify-end">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPaginaAtual(p => Math.max(1, p - 1))}
-                disabled={paginaAtual === 1}
-                className="border-border hover:bg-accent text-foreground"
-              >
+              <Button variant="outline" size="sm" onClick={() => setPaginaAtual(p => Math.max(1, p - 1))} disabled={paginaAtual === 1} className="border-border hover:bg-accent text-foreground">
                 <ChevronLeft size={16} /> Anterior
               </Button>
               <div className="flex items-center px-2 text-sm font-medium text-foreground sm:hidden">
                 {paginaAtual} / {totalPaginas}
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPaginaAtual(p => Math.min(totalPaginas, p + 1))}
-                disabled={paginaAtual === totalPaginas}
-                className="border-border hover:bg-accent text-foreground"
-              >
+              <Button variant="outline" size="sm" onClick={() => setPaginaAtual(p => Math.min(totalPaginas, p + 1))} disabled={paginaAtual === totalPaginas} className="border-border hover:bg-accent text-foreground">
                 Próxima <ChevronRight size={16} />
               </Button>
             </div>
@@ -291,55 +271,33 @@ export default function ProductsTable({ produtos, categorias }: ProductsTablePro
         )}
       </div>
 
-      {/* Floating Action Bar para Edição em Massa */}
       {selectedIds.length > 0 && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-card border border-border shadow-2xl shadow-black/50 rounded-full px-6 py-3 flex items-center gap-4 z-50 animate-in slide-in-from-bottom-10 fade-in duration-300">
-          <Badge variant="secondary" className="text-sm px-3 py-1 bg-secondary text-foreground rounded-full">
-            {selectedIds.length} selecionados
-          </Badge>
-          
+          <Badge variant="secondary" className="text-sm px-3 py-1 bg-secondary text-foreground rounded-full">{selectedIds.length} selecionados</Badge>
           <div className="h-6 w-px bg-border"></div>
-          
-          <Button 
-            size="sm" 
-            variant="outline" 
-            onClick={() => handleBulkAction('renew')} 
-            disabled={isProcessingBulk}
-            className="border-border hover:bg-primary/10 hover:text-primary gap-2"
-          >
-            <RefreshCw size={14} className={isProcessingBulk ? "animate-spin" : ""} /> 
-            Renovar Datas
+          <Button size="sm" variant="outline" onClick={() => handleBulkAction('renew')} disabled={isProcessingBulk} className="border-border hover:bg-primary/10 hover:text-primary gap-2">
+            <RefreshCw size={14} className={isProcessingBulk ? "animate-spin" : ""} /> Renovar Datas
           </Button>
-          
-          <Button 
-            size="sm" 
-            variant="destructive" 
-            onClick={() => handleBulkAction('delete')}
-            disabled={isProcessingBulk}
-            className="gap-2"
-          >
+          <Button size="sm" variant="destructive" onClick={() => handleBulkAction('delete')} disabled={isProcessingBulk} className="gap-2">
             <Trash2 size={14} /> Excluir
           </Button>
-
           <div className="h-6 w-px bg-border ml-2"></div>
-          
-          <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground" onClick={() => setSelectedIds([])}>
-            <X size={16} />
-          </Button>
+          <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground" onClick={() => setSelectedIds([])}><X size={16} /></Button>
         </div>
       )}
 
-      {/* Modais */}
       <Dialog open={!!editando} onOpenChange={() => setEditando(null)}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card border-border text-foreground">
-          <DialogHeader><DialogTitle>Editar produto</DialogTitle></DialogHeader>
+        {/* CORREÇÃO: p-4 ou sm:p-6 (era p-8) diminui o respiro interno para caber na tela */}
+        <DialogContent className="sm:max-w-[1000px] w-[95vw] max-h-[95vh] overflow-y-auto bg-[#0F0F13] border-[#2A2A35] text-foreground p-4 sm:p-6">
+          <DialogHeader><DialogTitle className="text-xl font-black mb-2">Editar produto</DialogTitle></DialogHeader>
           {editando && <ProductForm categorias={categorias} produto={editando} onSave={handleSaved} onCancel={() => setEditando(null)} />}
         </DialogContent>
       </Dialog>
 
       <Dialog open={adicionando} onOpenChange={setAdicionando}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card border-border text-foreground">
-          <DialogHeader><DialogTitle>Adicionar produto</DialogTitle></DialogHeader>
+        {/* CORREÇÃO: p-4 ou sm:p-6 (era p-8) diminui o respiro interno para caber na tela */}
+        <DialogContent className="sm:max-w-[1000px] w-[95vw] max-h-[95vh] overflow-y-auto bg-[#0F0F13] border-[#2A2A35] text-foreground p-4 sm:p-6">
+          <DialogHeader><DialogTitle className="text-xl font-black mb-2">Adicionar produto</DialogTitle></DialogHeader>
           <ProductForm categorias={categorias} onSave={handleSaved} onCancel={() => setAdicionando(false)} />
         </DialogContent>
       </Dialog>

@@ -13,6 +13,11 @@ const LOJA_LABEL: Record<Loja, string> = {
   casasbahia: 'Casas Bahia', centauro: 'Centauro', aliexpress: 'AliExpress',
 }
 
+// Utilitário para remover acentos (ex: "Ração" -> "Racao")
+const removeAcentos = (str: string) => {
+  return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
 interface FilterPanelProps {
   filtros: FiltrosProduto
   onFiltrosChange: (f: FiltrosProduto) => void
@@ -45,11 +50,24 @@ export default function FilterPanel({ filtros, onFiltrosChange, tagsDaCategoria,
 
   const lojasAtivas = LOJAS.filter(loja => marketplacesDisponiveis.includes(loja))
 
+  // --- LÓGICA DE BUSCA INTELIGENTE DE TAGS ---
+  const termoBusca = removeAcentos(buscaTag.toLowerCase().trim())
+  
+  // Tenta adivinhar o singular caso o usuário tenha digitado no plural (arranca o S ou ES)
+  const termoBuscaSingular = termoBusca.endsWith('s') 
+    ? termoBusca.endsWith('oes') ? termoBusca.replace(/oes$/, 'ao') : termoBusca.replace(/s$/, '')
+    : termoBusca
+
+  const tagsFiltradas = tagsDaCategoria.filter(tag => {
+    const tagLimpa = removeAcentos(tag.toLowerCase())
+    // Ex: Se o user digitou "Gatos", o termoBusca="gatos" e o termoBuscaSingular="gato".
+    // Como no banco está cadastrado "Gato" (tagLimpa="gato"), o includes() do singular vai dar TRUE!
+    return tagLimpa.includes(termoBusca) || tagLimpa.includes(termoBuscaSingular)
+  })
+
   return (
-    // O contêiner pai controla o layout, o FilterPanel apenas renderiza o conteúdo
     <div className="flex flex-col gap-8 bg-[#1A1A24] md:border md:border-[#2A2A35] rounded-3xl md:shadow-sm">
       
-      {/* Título (Só aparece no Desktop, pois no Mobile o SheetTitle já faz isso) */}
       <div className="hidden md:block px-6 py-5 border-b border-[#2A2A35]">
         <p className="text-sm font-black uppercase tracking-widest text-white">Filtros</p>
       </div>
@@ -97,7 +115,6 @@ export default function FilterPanel({ filtros, onFiltrosChange, tagsDaCategoria,
               </p>
             </div>
 
-            {/* INPUT DE BUSCA DE TAGS */}
             <input
               type="text"
               placeholder="Buscar característica..."
@@ -107,22 +124,18 @@ export default function FilterPanel({ filtros, onFiltrosChange, tagsDaCategoria,
               style={{ '--tw-ring-color': cor, borderColor: buscaTag ? cor : '' } as React.CSSProperties}
             />
 
-            {/* CONTÊINER COM SCROLL E LIMITE DE ALTURA */}
             <div className="flex flex-wrap gap-2 max-h-[220px] overflow-y-auto pr-2 pb-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-[#2A2A35] [&::-webkit-scrollbar-thumb]:rounded-full">
-              {tagsDaCategoria
-                .filter(tag => tag.toLowerCase().includes(buscaTag.toLowerCase()))
-                .map(tag => (
-                  <FilterChip
-                    key={tag}
-                    label={tag}
-                    ativo={(filtros.tags ?? []).includes(tag)}
-                    cor={cor}
-                    onClick={() => toggleTag(tag)}
-                  />
+              {tagsFiltradas.map(tag => (
+                <FilterChip
+                  key={tag}
+                  label={tag}
+                  ativo={(filtros.tags ?? []).includes(tag)}
+                  cor={cor}
+                  onClick={() => toggleTag(tag)}
+                />
               ))}
               
-              {/* Mensagem se não encontrar nenhuma tag */}
-              {tagsDaCategoria.filter(tag => tag.toLowerCase().includes(buscaTag.toLowerCase())).length === 0 && (
+              {tagsFiltradas.length === 0 && (
                 <p className="text-xs text-[#A1A1AA] w-full text-center py-2">
                   Nenhum filtro encontrado.
                 </p>

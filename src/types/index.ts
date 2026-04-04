@@ -14,13 +14,16 @@ export interface Produto {
   preco: number
   preco_original?: number
   desconto_pct?: number
-  imagem: string | null
+  imagem: string
   link_afiliado: string
-  loja: Loja
+  loja: string
   tags?: string[]
-  destaque: boolean
+  // NOVO: Record onde a chave é o nome do atributo ("Tamanho") e o valor é a opção ("M")
+  atributos?: Record<string, string> 
+  destaque?: boolean
   novo?: boolean
-  createdAt?: string // <- Novo campo para rastrear a idade do produto (ISO 8601)
+  createdAt?: string
+  marketplace?: string
 }
 
 export interface Categoria {
@@ -38,9 +41,10 @@ export interface ProdutosData {
 }
 
 export interface FiltrosProduto {
-  lojas?: Loja[]
   precoMin?: number
   precoMax?: number
+  lojas?: Loja[]
   tags?: string[]
-  ordenar?: 'menor-preco' | 'maior-desconto' | 'az'
+  // NOVO: Dicionário de atributos selecionados no filtro
+  atributos?: Record<string, string[]> 
 }

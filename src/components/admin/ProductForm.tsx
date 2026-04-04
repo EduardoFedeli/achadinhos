@@ -10,7 +10,6 @@ import type { Produto, Categoria, Loja } from '@/types'
 
 const LOJAS: Loja[] = ['amazon', 'shopee', 'magalu', 'mercadolivre', 'americanas', 'casasbahia', 'centauro', 'aliexpress']
 
-// Suporte retroativo para quando a prop antiga tinha apenas categoriaSlug
 interface ProdutoComCategoria extends Produto {
   categoriaSlug?: string
   categoriaSlugs?: string[]
@@ -23,14 +22,13 @@ interface ProductFormProps {
   onCancel: () => void
 }
 
-export default function ProductForm({ categorias, produto, onSave, onCancel }: ProductFormProps) {
+export default function ProductForm({ categorias = [], produto, onSave, onCancel }: ProductFormProps) {
   const isEdit = !!produto
   const [nome, setNome] = useState(produto?.nome ?? '')
   
-  // Inicializa o array de categorias. Se for um produto antigo com apenas 'categoriaSlug', transforma em array.
   const initialCategories = produto?.categoriaSlugs?.length 
     ? produto.categoriaSlugs 
-    : (produto?.categoriaSlug ? [produto.categoriaSlug] : [categorias[0]?.slug ?? ''])
+    : (produto?.categoriaSlug ? [produto.categoriaSlug] : [categorias?.[0]?.slug ?? ''])
   
   const [selectedCategorias, setSelectedCategorias] = useState<string[]>(initialCategories)
   
@@ -39,12 +37,13 @@ export default function ProductForm({ categorias, produto, onSave, onCancel }: P
   const [desconto, setDesconto] = useState(produto?.desconto_pct?.toString() ?? '')
   const [imagem, setImagem] = useState(produto?.imagem ?? '')
   const [linkAfiliado, setLinkAfiliado] = useState(produto?.link_afiliado ?? '')
-  const [loja, setLoja] = useState<Loja>(produto?.loja ?? 'amazon')
+  const [loja, setLoja] = useState<Loja>((produto?.loja as Loja) ?? 'amazon')
+  
   const [tagInput, setTagInput] = useState('')
   const [tags, setTags] = useState<string[]>(produto?.tags ?? [])
+
   const [destaque, setDestaque] = useState(produto?.destaque ?? false)
   const [novo, setNovo] = useState(produto?.novo ?? false)
-  // Estado para capturar e editar a data formatada para o input date (YYYY-MM-DD)
   const [dataCadastro, setDataCadastro] = useState(
     produto?.createdAt 
       ? new Date(produto.createdAt).toISOString().split('T')[0] 
@@ -56,16 +55,37 @@ export default function ProductForm({ categorias, produto, onSave, onCancel }: P
     setPrecoOriginal(v)
     const orig = parseFloat(v)
     const atual = parseFloat(preco)
-    if (!isNaN(orig) && !isNaN(atual) && orig > 0) {
+    if (!isNaN(orig) && !isNaN(atual) && orig > atual) {
       setDesconto(String(Math.round((1 - atual / orig) * 100)))
+    } else {
+      setDesconto('')
     }
+  }
+
+  function handlePrecoAtualChange(v: string) {
+    setPreco(v)
+    const atual = parseFloat(v)
+    const orig = parseFloat(precoOriginal)
+    if (!isNaN(orig) && !isNaN(atual) && orig > atual) {
+      setDesconto(String(Math.round((1 - atual / orig) * 100)))
+    } else {
+      setDesconto('')
+    }
+  }
+
+  function formatarTag(str: string) {
+    if (!str) return ''
+    const trimStr = str.trim()
+    return trimStr.charAt(0).toUpperCase() + trimStr.slice(1).toLowerCase()
   }
 
   function addTag(e: React.KeyboardEvent) {
     if (e.key === 'Enter' && tagInput.trim()) {
       e.preventDefault()
-      if (!tags.includes(tagInput.trim())) {
-        setTags([...tags, tagInput.trim()])
+      const tagFormatada = formatarTag(tagInput)
+      
+      if (!tags.includes(tagFormatada)) {
+        setTags([...tags, tagFormatada])
       }
       setTagInput('')
     }
@@ -85,9 +105,25 @@ export default function ProductForm({ categorias, produto, onSave, onCancel }: P
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    
+
+    const nomeLimpo = nome.trim().replace(/\s+/g, ' ')
+    const linkLimpo = linkAfiliado.trim()
+    const imagemLimpa = imagem.trim()
+    const precoNum = parseFloat(preco)
+    const precoOriginalNum = precoOriginal ? parseFloat(precoOriginal) : undefined
+
     if (selectedCategorias.length === 0) {
       alert('Selecione ao menos uma categoria.')
+      return
+    }
+
+    if (precoOriginalNum && precoNum >= precoOriginalNum) {
+      alert('O Preço Original deve ser MAIOR que o Preço Atual.')
+      return
+    }
+
+    if (linkLimpo && !linkLimpo.startsWith('http')) {
+      alert('O link de afiliado precisa começar com http:// ou https://')
       return
     }
     
@@ -95,24 +131,22 @@ export default function ProductForm({ categorias, produto, onSave, onCancel }: P
 
     const novoProduto: Produto = {
       id: produto?.id ?? `prod-${Date.now()}`,
-      nome,
-      preco: parseFloat(preco),
-      preco_original: precoOriginal ? parseFloat(precoOriginal) : undefined,
+      nome: nomeLimpo,
+      preco: precoNum,
+      preco_original: precoOriginalNum,
       desconto_pct: desconto ? parseInt(desconto) : undefined,
-      imagem: imagem || null,
-      link_afiliado: linkAfiliado,
+      imagem: imagemLimpa || '',
+      link_afiliado: linkLimpo,
       loja,
       tags: tags.length > 0 ? tags : undefined,
       destaque,
       novo,
-      // Força a atualização da data escolhida no calendário manualmente (mantendo horário neutro Z)
       createdAt: new Date(`${dataCadastro}T12:00:00Z`).toISOString(),
     }
 
     const url = isEdit ? `/api/produtos/${produto!.id}` : '/api/produtos'
     const method = isEdit ? 'PUT' : 'POST'
     
-    // Novo payload unificado enviando o produto e as categorias alvo
     const body = {
       produto: novoProduto,
       categoriaSlugs: selectedCategorias
@@ -133,162 +167,180 @@ export default function ProductForm({ categorias, produto, onSave, onCancel }: P
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-5 text-foreground">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-        <div className="sm:col-span-2 space-y-1.5">
-          <Label>Nome do Produto <span className="text-primary font-bold">*</span></Label>
-          <Input 
-            value={nome} 
-            onChange={e => setNome(e.target.value)} 
-            required 
-            className="bg-background border-input focus-visible:ring-primary"
-          />
-        </div>
-        
-        <div className="sm:col-span-2 space-y-2">
-          <Label>Categorias (Selecione uma ou mais)</Label>
-          <div className="flex flex-wrap gap-2">
-            {categorias.map(c => {
-              const isSelected = selectedCategorias.includes(c.slug)
-              return (
-                <Badge
-                  key={c.slug}
-                  variant={isSelected ? "default" : "outline"}
-                  onClick={() => toggleCategoria(c.slug)}
-                  className={`cursor-pointer px-3 py-1 text-sm select-none transition-colors ${
-                    isSelected 
-                      ? 'bg-primary text-primary-foreground hover:bg-primary/90 border-transparent' 
-                      : 'bg-background border-border text-muted-foreground hover:border-primary/50 hover:text-foreground'
-                  }`}
-                >
-                  {c.emoji} {c.nome}
-                </Badge>
-              )
-            })}
-          </div>
-        </div>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4 text-foreground pb-2">
+      
+      {/* GRID SIMPLIFICADO E PERFEITO: 1 coluna no mobile, 2 colunas no desktop */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
-        <div className="space-y-1.5">
-          <Label>Loja</Label>
-          <select
-            value={loja}
-            onChange={e => setLoja(e.target.value as Loja)}
-            className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {LOJAS.map(l => <option key={l} value={l} className="bg-card text-foreground">{l}</option>)}
-          </select>
-        </div>
-
-        <div className="space-y-1.5">
-          <Label>Preço atual (R$)</Label>
-          <Input 
-            type="number" 
-            step="0.01" 
-            value={preco} 
-            onChange={e => setPreco(e.target.value)} 
-            required 
-            className="bg-background border-input"
-          />
-        </div>
-
-        <div className="space-y-1.5">
-          <Label>Preço original (R$)</Label>
-          <Input 
-            type="number" 
-            step="0.01" 
-            value={precoOriginal} 
-            onChange={e => handlePrecoOriginalChange(e.target.value)} 
-            className="bg-background border-input"
-          />
-        </div>
-
-        <div className="space-y-1.5">
-          <Label>Desconto %</Label>
-          <Input 
-            type="number" 
-            value={desconto} 
-            onChange={e => setDesconto(e.target.value)} 
-            className="bg-background border-input"
-          />
-        </div>
-
-        <div className="sm:col-span-2 space-y-1.5">
-          <Label>URL da imagem</Label>
-          <div className="flex gap-3 items-center">
+        {/* BLOCO 1: Informações Básicas */}
+        <div className="bg-[#1A1A24]/40 p-4 sm:p-5 rounded-xl border border-[#2A2A35] flex flex-col gap-3 h-full">
+          <h3 className="text-xs font-black uppercase tracking-widest text-[#A1A1AA] mb-1">1. Informações Básicas</h3>
+          
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground">Nome do Produto <span className="text-primary">*</span></Label>
             <Input 
-              value={imagem} 
-              onChange={e => setImagem(e.target.value)} 
-              placeholder="https://..." 
-              className="bg-background border-input flex-1"
+              value={nome} 
+              onChange={e => setNome(e.target.value)} 
+              required 
+              placeholder="Ex: Mouse Gamer Logitech G203"
+              className="bg-[#0F0F13] border-[#2A2A35] focus-visible:ring-primary h-9 text-sm rounded-lg"
             />
-            {imagem && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={imagem} alt="" className="h-10 w-10 rounded-md object-cover border border-border shrink-0" />
-            )}
+          </div>
+          
+          <div className="space-y-1.5 flex-1">
+            <Label className="text-xs text-muted-foreground">Categorias <span className="text-primary">*</span></Label>
+            <div className="flex flex-wrap gap-1.5">
+              {categorias?.map(c => {
+                const isSelected = selectedCategorias.includes(c.slug)
+                return (
+                  <Badge
+                    key={c.slug}
+                    variant={isSelected ? "default" : "outline"}
+                    onClick={() => toggleCategoria(c.slug)}
+                    className={`cursor-pointer px-2 py-1 text-xs select-none transition-colors rounded-md ${
+                      isSelected 
+                        ? 'bg-primary text-primary-foreground hover:bg-primary/90 border-transparent' 
+                        : 'bg-[#0F0F13] border-[#2A2A35] text-muted-foreground hover:border-primary/50 hover:text-foreground'
+                    }`}
+                  >
+                    {c.emoji} {c.nome}
+                  </Badge>
+                )
+              })}
+            </div>
           </div>
         </div>
 
-        <div className="sm:col-span-2 space-y-1.5">
-          <Label>Link afiliado</Label>
-          <Input 
-            value={linkAfiliado} 
-            onChange={e => setLinkAfiliado(e.target.value)} 
-            placeholder="https://amzn.to/..." 
-            required 
-            className="bg-background border-input"
-          />
+        {/* BLOCO 2: Venda & Preço */}
+        <div className="bg-[#1A1A24]/40 p-4 sm:p-5 rounded-xl border border-[#2A2A35] flex flex-col gap-3 h-full">
+          <h3 className="text-xs font-black uppercase tracking-widest text-[#A1A1AA] mb-1">2. Venda & Preço</h3>
+          
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground">Loja Origem <span className="text-primary">*</span></Label>
+            <select
+              value={loja}
+              onChange={e => setLoja(e.target.value as Loja)}
+              className="flex h-9 w-full items-center justify-between rounded-lg border border-[#2A2A35] bg-[#0F0F13] px-3 py-1 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+            >
+              {LOJAS.map(l => <option key={l} value={l}>{l.toUpperCase()}</option>)}
+            </select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 flex-1">
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">Preço (R$) <span className="text-primary">*</span></Label>
+              <Input 
+                type="number" step="0.01" value={preco} 
+                onChange={e => handlePrecoAtualChange(e.target.value)} 
+                required placeholder="0.00"
+                className="bg-[#0F0F13] border-[#2A2A35] h-9 text-primary font-bold text-sm rounded-lg"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">Preço Original (R$)</Label>
+              <Input 
+                type="number" step="0.01" value={precoOriginal} 
+                onChange={e => handlePrecoOriginalChange(e.target.value)} 
+                placeholder="Opcional"
+                className="bg-[#0F0F13] border-[#2A2A35] h-9 text-sm rounded-lg"
+              />
+            </div>
+          </div>
+          {desconto && (
+            <p className="text-[10px] font-bold text-primary bg-primary/10 w-fit px-1.5 py-0.5 rounded mt-auto">
+              {desconto}% OFF
+            </p>
+          )}
         </div>
 
-        <div className="sm:col-span-2 space-y-1.5">
-          <Label>Tags (Aperte Enter para adicionar)</Label>
-          <Input
-            value={tagInput}
-            onChange={e => setTagInput(e.target.value)}
-            onKeyDown={addTag}
-            placeholder="Ex: smartphone, custo-beneficio..."
-            className="bg-background border-input"
-          />
-          <div className="mt-2 flex flex-wrap gap-2">
-            {tags.map(tag => (
-              <button 
-                key={tag} 
-                type="button" 
-                onClick={() => removeTag(tag)} 
-                className="flex items-center gap-1 rounded-full bg-secondary border border-border px-3 py-1 text-xs font-medium text-secondary-foreground transition-colors hover:bg-destructive hover:text-destructive-foreground hover:border-destructive"
-              >
-                {tag} ✕
-              </button>
-            ))}
+        {/* BLOCO 3: Tags */}
+        <div className="bg-[#1A1A24]/40 p-4 sm:p-5 rounded-xl border border-primary/30 relative flex flex-col gap-3 h-full">
+          <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-[9px] font-black px-2 py-0.5 rounded-bl-lg rounded-tr-xl uppercase tracking-widest">
+            Atenção
+          </div>
+          <h3 className="text-xs font-black uppercase tracking-widest text-white mb-1">3. Tags</h3>
+          
+          <div className="space-y-1.5 flex-1">
+            <Label className="text-xs text-muted-foreground">Adicionar Tag (Enter)</Label>
+            <Input
+              value={tagInput} onChange={e => setTagInput(e.target.value)} onKeyDown={addTag}
+              placeholder="Ex: acessorios, feminino..." className="bg-[#0F0F13] border-[#2A2A35] h-9 text-sm rounded-lg"
+            />
+            <p className="text-[10px] text-muted-foreground mt-1 bg-[#0F0F13] p-1.5 rounded-md border border-[#2A2A35] leading-tight">
+              ⚠️ Cadastre <strong>SEMPRE NO SINGULAR</strong>. Só use plural se a palavra exigir (Ex: Tênis).
+            </p>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {tags.map(tag => (
+                <button 
+                  key={tag} type="button" onClick={() => removeTag(tag)} 
+                  className="flex items-center gap-1 rounded-md bg-secondary border border-border px-2 py-1 text-[11px] font-bold text-secondary-foreground transition-colors hover:bg-destructive hover:text-destructive-foreground hover:border-destructive"
+                >
+                  {tag} ✕
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
-        <div className="sm:col-span-2 space-y-1.5 border-t border-border pt-5 mt-2">
-          <Label>Data de Cadastro (Para auditoria de +90 dias)</Label>
-          <Input 
-            type="date"
-            value={dataCadastro}
-            onChange={e => setDataCadastro(e.target.value)}
-            className="bg-background border-input max-w-[200px]"
-          />
-          <p className="text-xs text-muted-foreground mt-1">
-            Você pode backdatar um produto para testar o filtro, ou forçar uma renovação manual.
-          </p>
+        {/* BLOCO 4: Mídia e Redirecionamento */}
+        <div className="bg-[#1A1A24]/40 p-4 sm:p-5 rounded-xl border border-[#2A2A35] flex flex-col gap-3 h-full">
+          <h3 className="text-xs font-black uppercase tracking-widest text-[#A1A1AA] mb-1">4. Mídia e Redirecionamento</h3>
+          
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground">URL da Imagem <span className="text-primary">*</span></Label>
+            <div className="flex gap-2 items-center">
+              <Input 
+                value={imagem} onChange={e => setImagem(e.target.value)} required
+                placeholder="https://..." className="bg-[#0F0F13] border-[#2A2A35] flex-1 h-9 text-sm rounded-lg"
+              />
+              {imagem && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={imagem.trim()} alt="" className="h-9 w-9 rounded-md object-cover border border-[#2A2A35] shrink-0" />
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-1 flex-1">
+            <Label className="text-xs text-muted-foreground">Link de Afiliado <span className="text-primary">*</span></Label>
+            <Input 
+              value={linkAfiliado} onChange={e => setLinkAfiliado(e.target.value)} required
+              placeholder="https://amzn.to/..." className="bg-[#0F0F13] border-[#2A2A35] h-9 text-sm rounded-lg"
+            />
+          </div>
         </div>
 
-        <div className="flex items-center gap-3 bg-secondary/30 p-3 rounded-lg border border-border mt-2">
-          <Switch id="destaque" checked={destaque} onCheckedChange={setDestaque} />
-          <Label htmlFor="destaque" className="cursor-pointer">Destaque na vitrine</Label>
+        {/* BLOCO 5: Auditoria & Flags (Ocupando a largura inteira) */}
+        <div className="lg:col-span-2 bg-[#1A1A24]/40 p-4 sm:p-5 rounded-xl border border-[#2A2A35] flex flex-col gap-3 h-full">
+          <h3 className="text-xs font-black uppercase tracking-widest text-[#A1A1AA] mb-1">5. Auditoria & Flags</h3>
+          
+          <div className="flex flex-col sm:flex-row gap-4 sm:items-end w-full">
+            <div className="space-y-1 flex-1">
+              <Label className="text-[11px] text-muted-foreground">Data Cadastro</Label>
+              <Input 
+                type="date" value={dataCadastro} onChange={e => setDataCadastro(e.target.value)}
+                className="bg-[#0F0F13] border-[#2A2A35] h-9 w-full text-xs rounded-lg px-2"
+              />
+            </div>
+            
+            <div className="flex gap-4 flex-1">
+              <div className="flex-1 flex items-center justify-center gap-2 bg-[#0F0F13] px-2 rounded-lg border border-[#2A2A35] h-9">
+                <Switch id="destaque" checked={destaque} onCheckedChange={setDestaque} className="scale-75 origin-left" />
+                <Label htmlFor="destaque" className="cursor-pointer font-bold text-[11px] select-none">Vitrine</Label>
+              </div>
+              <div className="flex-1 flex items-center justify-center gap-2 bg-[#0F0F13] px-2 rounded-lg border border-[#2A2A35] h-9">
+                <Switch id="novo" checked={novo} onCheckedChange={setNovo} className="scale-75 origin-left" />
+                <Label htmlFor="novo" className="cursor-pointer font-bold text-[11px] select-none">Novo</Label>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="flex items-center gap-3 bg-secondary/30 p-3 rounded-lg border border-border">
-          <Switch id="novo" checked={novo} onCheckedChange={setNovo} />
-          <Label htmlFor="novo" className="cursor-pointer">Selo de Novo</Label>
-        </div>
       </div>
 
-      <div className="flex justify-end gap-3 pt-4 border-t border-border mt-2">
-        <Button type="button" variant="ghost" onClick={onCancel}>Cancelar</Button>
-        <Button type="submit" disabled={loading} className="min-w-[120px]">
+      {/* RODAPÉ */}
+      <div className="flex justify-end gap-3 pt-4 mt-2 border-t border-[#2A2A35]">
+        <Button type="button" variant="ghost" onClick={onCancel} className="h-9 px-5 rounded-lg text-sm">Cancelar</Button>
+        <Button type="submit" disabled={loading} className="h-9 px-6 rounded-lg font-black text-sm">
           {loading ? 'Salvando...' : 'Salvar Produto'}
         </Button>
       </div>

@@ -60,7 +60,6 @@ export default function CategoriaContent({ cat, todasCategorias }: CategoriaCont
   const tags = useMemo(() => getTagsDaCategoria(produtosDaCategoria), [produtosDaCategoria])
 
   const produtosFiltradosEOrdenados = useMemo(() => {
-    // 1. FILTRAGEM LOCAL NA MEMÓRIA
     let filtrados = produtosDaCategoria.filter((p: any) => {
       // Filtro de Preço
       if (filtros.precoMin && p.preco < filtros.precoMin) return false
@@ -75,14 +74,12 @@ export default function CategoriaContent({ cat, todasCategorias }: CategoriaCont
       // Filtro de Tags
       if (filtros.tags && filtros.tags.length > 0) {
         if (!p.tags) return false
-        // Se o usuário selecionou tags, o produto precisa ter pelo menos uma delas
         if (!filtros.tags.some(t => p.tags.includes(t))) return false
       }
       
       return true
     })
 
-    // 2. ORDENAÇÃO
     return filtrados.sort((a: any, b: any) => {
       switch (ordenacao) {
         case 'menor-preco':
@@ -102,13 +99,14 @@ export default function CategoriaContent({ cat, todasCategorias }: CategoriaCont
     })
   }, [produtosDaCategoria, filtros, ordenacao])
 
-  // Cor principal
   const catColor = cat?.cor || '#22C55E'
 
   if (!cat) return <div className="p-8 text-white text-center">Carregando departamento...</div>
 
-  // Quantidade de filtros ativos (para mostrar uma bolinha vermelha no ícone)
-  const filtrosAtivos = Object.keys(filtros).length
+  const filtrosAtivos = 
+    (filtros.precoMin || filtros.precoMax ? 1 : 0) +
+    (filtros.lojas?.length || 0) +
+    (filtros.tags?.length || 0)
 
   return (
     <div className="w-full pb-24 space-y-8 mt-4 relative">
@@ -139,7 +137,6 @@ export default function CategoriaContent({ cat, todasCategorias }: CategoriaCont
 
       <div className="flex flex-col md:flex-row gap-8">
         
-        {/* Painel Esquerdo (Apenas Desktop) */}
         <aside className="hidden md:block w-[260px] shrink-0 sticky top-28 h-fit">
           <FilterPanel
             filtros={filtros}
@@ -151,7 +148,6 @@ export default function CategoriaContent({ cat, todasCategorias }: CategoriaCont
           />
         </aside>
 
-        {/* Listagem de Produtos */}
         <div className="flex-1 min-w-0">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 bg-[#1A1A24]/60 p-4 rounded-2xl border border-[#2A2A35]">
             <h2 className="text-lg font-bold text-white flex items-center gap-3">
@@ -173,16 +169,10 @@ export default function CategoriaContent({ cat, todasCategorias }: CategoriaCont
             </Select>
           </div>
 
-          {/* Grid ou Empty State */}
           {produtosFiltradosEOrdenados.length > 0 ? (
             <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {produtosFiltradosEOrdenados.map(produto => (
-                <ProductCard 
-                  key={produto.id} 
-                  produto={produto} 
-                  categoria={cat}
-                  // Não passe brandColorOnly, assim ele usa cat.cor
-                />
+                <ProductCard key={produto.id} produto={produto} categoria={cat} />
               ))}
             </div>
           ) : (
@@ -204,7 +194,6 @@ export default function CategoriaContent({ cat, todasCategorias }: CategoriaCont
         </div>
       </div>
 
-      {/* FAB + Drawer de Filtro (Mobile) */}
       <div className="md:hidden">
         <Sheet>
           <SheetTrigger asChild>
@@ -229,7 +218,6 @@ export default function CategoriaContent({ cat, todasCategorias }: CategoriaCont
               </SheetTitle>
             </SheetHeader>
             
-            {/* Corpo rolável com o FilterPanel */}
             <div className="flex-1 overflow-y-auto p-5">
               <FilterPanel
                 filtros={filtros}
@@ -243,7 +231,6 @@ export default function CategoriaContent({ cat, todasCategorias }: CategoriaCont
           </SheetContent>
         </Sheet>
       </div>
-
     </div>
   )
 }
