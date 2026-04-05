@@ -24,7 +24,7 @@ export default function ProductCard({ produto, categoria, brandColorOnly, forceC
 
   return (
     <a
-      href={produto.link_afiliado || '#'}
+      href={produto.link_afiliado || (produto as any).linkAfiliado || (produto as any).link || '#'}
       target="_blank"
       rel="noopener noreferrer sponsored"
       className="group flex flex-col overflow-hidden rounded-[24px] bg-[#1A1A24] border border-[#2A2A35] transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.5)] relative"
