@@ -5,39 +5,44 @@ import { createClient } from '@supabase/supabase-js'
 export const dynamic = 'force-dynamic'
 
 export default async function CategoriasPage() {
+  // 1. Busca as categorias básicas (emotes, nomes, slugs)
   const categoriasBase = await getCategorias()
   
-  // MUDANÇA CRÍTICA: Usando a SERVICE_ROLE_KEY para o banco não esconder os dados por segurança
-  const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+  // 2. Conecta no Supabase usando a SERVICE_ROLE_KEY (Chave Mestre)
+  // Isso garante que leremos TODOS os produtos para a contagem, pulando RLS.
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY! // A chave secreta e segura do servidor
+  )
 
-  const { data: produtos } = await supabase.from('produtos').select('categoriaSlugs, categoriaSlug')
+  // 3. Busca apenas as colunas de categoria dos produtos
+  const { data: produtos } = await supabase.from('produtos').select('categoriaSlugs')
 
-  // RASTREADOR: Vai imprimir no terminal do seu VS Code o que o banco está enviando
-  console.log("🦖 LOG T-HEX: Total de produtos puxados do banco:", produtos?.length)
-  if (produtos && produtos.length > 0) {
-    console.log("🦖 LOG T-HEX: Exemplo de categorias do 1º produto:", produtos[0].categoriaSlugs)
-  }
-
-  const categorias = categoriasBase.map(cat => {
+  // 4. Faz a matemática da contagem (robusta contra formatos de array/texto)
+  const categoriasComContagem = categoriasBase.map(cat => {
     const contagem = produtos?.filter(p => {
-      if (p.categoriaSlug === cat.slug) return true;
-      if (p.categoriaSlugs) {
-         let arr = [];
-         if (Array.isArray(p.categoriaSlugs)) arr = p.categoriaSlugs;
-         else if (typeof p.categoriaSlugs === 'string') {
-            try { arr = JSON.parse(p.categoriaSlugs); } catch(e) {}
-         }
-         if (arr.includes(cat.slug)) return true;
+      if (!p.categoriaSlugs) return false;
+      
+      let slugsArray = [];
+      if (Array.isArray(p.categoriaSlugs)) {
+        slugsArray = p.categoriaSlugs;
+      } else if (typeof p.categoriaSlugs === 'string') {
+        try { slugsArray = JSON.parse(p.categoriaSlugs); } catch (e) {}
       }
-      return false;
+
+      return slugsArray.includes(cat.slug);
     }).length || 0;
 
-    return { ...cat, quantidade: contagem }
+    return {
+      ...cat,
+      quantidade: contagem
+    }
   })
 
+  // 5. Manda para o componente visual novo
   return (
     <div>
-      <CategoriesPanel categorias={categorias} />
+      <CategoriesPanel categorias={categoriasComContagem} />
     </div>
   )
 }

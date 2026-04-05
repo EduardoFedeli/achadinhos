@@ -8,8 +8,16 @@ export async function PUT(request: Request, { params }: { params: Promise<{ slug
   if (!(await isAdminAuthenticated())) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
   try {
     const { slug } = await params
-    const cat = await request.json()
-    const { data, error } = await supabase.from('categorias').update(cat).eq('slug', slug).select()
+    
+    // Desestruturação explícita para garantir a captura do imagem_url
+    const { nome, slug: novoSlug, emoji, cor, descricao, imagem_url } = await request.json()
+    
+    const { data, error } = await supabase
+      .from('categorias')
+      .update({ nome, slug: novoSlug, emoji, cor, descricao, imagem_url })
+      .eq('slug', slug)
+      .select()
+      
     if (error) throw error
     return NextResponse.json({ ok: true, data })
   } catch (error: any) {

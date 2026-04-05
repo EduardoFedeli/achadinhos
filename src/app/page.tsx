@@ -3,7 +3,7 @@ import { getCategorias } from '@/lib/produtos'
 import Header from '@/components/Header'
 import HeroBanner from '@/components/HeroBanner'
 import CategoryGrid from '@/components/CategoryGrid'
-import ProductCard from '@/components/ProductCard' // <--- IMPORTANDO O SEU CARD DE VERDADE
+import ProductCard from '@/components/ProductCard'
 import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
@@ -32,7 +32,8 @@ export default async function HomePage() {
         <HeroBanner />
       </div>
 
-      <main className="w-full max-w-7xl mx-auto px-4 md:px-8 space-y-16 mt-12">
+      {/* CORREÇÃO UX: space-y-8 e mt-8 diminui o abismo vertical entre o Grid e o Destaque */}
+      <main className="w-full max-w-7xl mx-auto px-4 md:px-8 space-y-8 mt-8">
         
         <section>
           <CategoryGrid categorias={categorias} />
@@ -67,7 +68,6 @@ export default async function HomePage() {
         )}
 
         <section className="bg-[#1A1A24]/40 p-8 rounded-[32px] border border-[#2A2A35] shadow-2xl relative overflow-hidden">
-          {/* LUZ LARANJA RESTAURADA PARA COMBINAR COM FOGUINHO */}
           <div className="absolute -right-20 -bottom-20 w-64 h-64 bg-[#F97316]/10 blur-[100px] pointer-events-none" />
 
           <div className="flex items-center justify-between mb-10 relative z-10">
@@ -87,7 +87,7 @@ export default async function HomePage() {
                 key={produto.id} 
                 produto={produto} 
                 categoria={getCat(produto.categoriaSlugs?.[0])} 
-                forceColor="#F97316" /* Força o laranja Foguinho 🔥 */
+                forceColor="#F97316" 
               />
             ))}
           </div>

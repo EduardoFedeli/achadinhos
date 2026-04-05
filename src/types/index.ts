@@ -1,42 +1,29 @@
-export type Loja =
-  | 'amazon'
-  | 'shopee'
-  | 'magalu'
-  | 'mercadolivre'
-  | 'americanas'
-  | 'casasbahia'
-  | 'centauro'
-  | 'aliexpress'
+export type Loja = 'amazon' | 'shopee' | 'magalu' | 'mercadolivre' | 'americanas' | 'casasbahia' | 'centauro' | 'aliexpress';
 
 export interface Produto {
-  id: string
-  nome: string
-  preco: number
-  preco_original?: number // Para o código antigo
-  precoOriginal?: number  // Para o Supabase
-  desconto_pct?: number
-  imagem: string
-  link_afiliado: string   // Para o código antigo
-  linkAfiliado?: string    // Para o Supabase
-  loja: string
-  tags?: string[]
-  atributos?: Record<string, string> 
-  destaque?: boolean
-  novo?: boolean
-  createdAt?: string
-  marketplace?: string
-  categoriaSlug?: string
-  categoriaSlugs?: string[] // Array de categorias do Supabase
+  id: string;
+  nome: string;
+  preco: number;
+  preco_original?: number;
+  desconto_pct?: number;
+  imagem: string;
+  link_afiliado: string;
+  loja: string;
+  tags?: string[];
+  destaque?: boolean;
+  novo?: boolean;
+  createdAt: string;
+  categoriaSlugs?: string[];
 }
 
 export interface Categoria {
-  nome: string
-  slug: string
-  emoji?: string         // Mantemos como opcional para fallback
-  iconeUrl?: string      // Campo para o novo Flat Icon da IA
-  cor: string
-  descricao: string
-  produtos: Produto[]
+  id?: string;
+  nome: string;
+  slug: string;
+  emoji?: string;
+  cor: string;
+  descricao?: string;
+  imagem_url?: string; // 👈 Adicionamos essa linha aqui!
 }
 
 export interface ProdutosData {

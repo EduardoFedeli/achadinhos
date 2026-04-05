@@ -302,6 +302,7 @@ export default function ProductForm({ categorias = [], produto, onSave, onCancel
               onChange={e => setLoja(e.target.value)}
               className="flex h-9 w-full items-center justify-between rounded-lg border border-[#2A2A35] bg-[#0F0F13] px-3 py-1 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary uppercase"
             >
+              <option value="" disabled>Selecione uma loja...</option>
               {marketplaces.map(mk => (
                 <option key={mk.slug} value={mk.slug}>{mk.nome.toUpperCase()}</option>
               ))}

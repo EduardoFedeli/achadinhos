@@ -1,85 +1,146 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
+import { PlusCircle, Pencil, ExternalLink, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import CategoryForm from './CategoryForm'
+import { Input } from '@/components/ui/input'
 import type { Categoria } from '@/types'
+import CategoryFormModal from './CategoryFormModal'
+
+interface CategoriaComQuantidade extends Categoria {
+  quantidade: number
+  imagem_url?: string // 👈 Avisamos o TypeScript que a imagem pode existir!
+}
 
 interface CategoriesPanelProps {
-  categorias: Categoria[]
+  categorias: CategoriaComQuantidade[]
 }
 
 export default function CategoriesPanel({ categorias }: CategoriesPanelProps) {
-  const [editando, setEditando] = useState<Categoria | null>(null)
-  const [adicionando, setAdicionando] = useState(false)
-  const router = useRouter()
+  const [search, setSearch] = useState('')
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [editingCategory, setEditingCategory] = useState<Categoria | undefined>()
 
-  function handleSaved() {
-    setEditando(null)
-    setAdicionando(false)
-    router.refresh()
+  const categoriasFiltradas = categorias.filter(cat =>
+    cat.nome.toLowerCase().includes(search.toLowerCase()) ||
+    cat.slug.toLowerCase().includes(search.toLowerCase())
+  )
+
+  function handleOpenCreate() {
+    setEditingCategory(undefined)
+    setIsModalOpen(true)
+  }
+
+  function handleOpenEdit(cat: Categoria) {
+    setEditingCategory(cat)
+    setIsModalOpen(true)
   }
 
   return (
-    <div>
-      <div className="mb-6 flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-foreground">Categorias ({categorias.length})</h2>
-        <Button onClick={() => setAdicionando(true)}>+ Nova categoria</Button>
+    <div className="flex flex-col gap-5 h-full">
+      {/* CABEÇALHO (Tamanho Intermediário) */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-[#1A1A24] p-5 rounded-xl border border-[#2A2A35]">
+        <div>
+          <h1 className="text-2xl font-black text-white tracking-tight">Categorias ({categorias.length})</h1>
+          <p className="text-muted-foreground text-sm">Gerencie os nichos dos produtos.</p>
+        </div>
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <div className="relative flex-1 sm:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
+            <Input 
+              placeholder="Buscar categoria..." 
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="pl-9 bg-[#0F0F13] border-[#2A2A35] h-10 text-sm rounded-lg w-full focus-visible:ring-1 focus-visible:ring-primary"
+            />
+          </div>
+          <Button onClick={handleOpenCreate} className="bg-[#22C55E] text-black font-bold h-10 px-4 rounded-lg text-sm hover:bg-[#22C55E]/80 flex items-center gap-2 shrink-0">
+            <PlusCircle size={16} />
+            <span className="hidden sm:inline">Nova Categoria</span>
+          </Button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {categorias.map(cat => (
-          <div key={cat.slug} className="rounded-2xl bg-card border border-border p-5 transition-colors hover:border-border/80 shadow-sm flex flex-col h-full">
-            <div className="flex items-center gap-3 mb-3">
-              <div
-                className="flex h-10 w-10 items-center justify-center rounded-xl text-xl shrink-0"
-                style={{ backgroundColor: `${cat.cor}22`, border: `1px solid ${cat.cor}55` }}
+      {/* GRID (Médio, mais confortável de ler) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {categoriasFiltradas.map(cat => (
+          <div 
+            key={cat.slug} 
+            // Truque de CSS Avançado para cor dinâmica no hover
+            style={{ 
+              '--cat-color': cat.cor, 
+              '--cat-glow': `${cat.cor}30` 
+            } as React.CSSProperties}
+            className="group relative bg-[#1A1A24] border border-[#2A2A35] rounded-xl p-4 pl-5 flex flex-col gap-4 transition-all duration-300 hover:border-[var(--cat-color)] hover:shadow-[0_0_20px_var(--cat-glow)]"
+          >
+            {/* Linha colorida lateral */}
+            <div className="absolute left-0 top-4 bottom-4 w-1.5 rounded-r-md" style={{ backgroundColor: cat.cor }} />
+
+            {/* Topo do Card */}
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="flex items-center justify-center text-2xl shrink-0 w-10 h-10 bg-[#0F0F13] rounded-lg border border-[#2A2A35] overflow-hidden">
+                  {cat.imagem_url ? (
+                    <img src={cat.imagem_url} alt={cat.nome} className="w-full h-full object-contain p-1" />
+                  ) : (
+                    cat.emoji || '📁'
+                  )}
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <h3 className="text-base font-bold text-white truncate leading-tight group-hover:text-[var(--cat-color)] transition-colors">{cat.nome}</h3>
+                  <p className="text-xs text-gray-500 truncate mt-0.5">/{cat.slug}</p>
+                </div>
+              </div>
+              
+              {/* Badge de Contagem */}
+              <span 
+                className="px-2.5 py-1 rounded-full text-xs font-black shrink-0" 
+                style={{ backgroundColor: `${cat.cor}15`, color: cat.cor, border: `1px solid ${cat.cor}30` }}
+                title="Produtos Vinculados"
               >
-                {cat.emoji}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-bold text-foreground truncate">{cat.nome}</p>
-                <p className="text-xs text-muted-foreground truncate">/{cat.slug}</p>
-              </div>
-              <div
-                className="h-3 w-3 rounded-full border border-border/50 shrink-0"
-                style={{ backgroundColor: cat.cor }}
-                title={cat.cor}
-              />
+                {cat.quantidade}
+              </span>
             </div>
-            
-            <p className="text-xs text-muted-foreground mb-4 flex-1">{cat?.produtos?.length || 0} produtos cadastrados</p>
-            
-            <div className="grid grid-cols-2 gap-3 mt-auto pt-2 border-t border-border/50">
-              <Button size="sm" variant="secondary" onClick={() => setEditando(cat)} className="w-full text-foreground">
+
+            {/* Ações (Mais fáceis de clicar) */}
+            <div className="grid grid-cols-2 gap-2 mt-auto">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => handleOpenEdit(cat)}
+                className="border-[#2A2A35] bg-[#0F0F13] hover:bg-[#2A2A35] hover:text-white rounded-lg h-8 gap-2 text-xs font-semibold transition-colors"
+              >
+                <Pencil size={14} />
                 Editar
               </Button>
-              <Button size="sm" variant="outline" asChild className="w-full border-border hover:bg-accent text-foreground">
-                <Link href={`/${cat.slug}`} target="_blank">
-                  Ver site →
-                </Link>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                asChild
+                className="bg-[#0F0F13] border border-transparent hover:border-[#2A2A35] hover:bg-white/5 hover:text-white rounded-lg h-8 gap-2 text-xs font-semibold transition-colors"
+              >
+                <a href={`/${cat.slug}`} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink size={14} />
+                  Ver site
+                </a>
               </Button>
             </div>
           </div>
         ))}
       </div>
 
-      <Dialog open={!!editando} onOpenChange={() => setEditando(null)}>
-        <DialogContent className="max-w-lg bg-[#0F0F13] border-[#2A2A35] text-foreground p-6">
-          <DialogHeader><DialogTitle className="text-xl font-black">Editar categoria</DialogTitle></DialogHeader>
-          {editando && <CategoryForm categoria={editando} onSave={handleSaved} onCancel={() => setEditando(null)} />}
-        </DialogContent>
-      </Dialog>
+      {categoriasFiltradas.length === 0 && (
+        <div className="text-center py-16 bg-[#1A1A24] rounded-xl border border-[#2A2A35]">
+          <span className="text-4xl">🦖</span>
+          <p className="mt-4 text-sm text-gray-500">Nenhuma categoria encontrada.</p>
+        </div>
+      )}
 
-      <Dialog open={adicionando} onOpenChange={setAdicionando}>
-        <DialogContent className="max-w-lg bg-[#0F0F13] border-[#2A2A35] text-foreground p-6">
-          <DialogHeader><DialogTitle className="text-xl font-black">Nova categoria</DialogTitle></DialogHeader>
-          <CategoryForm onSave={handleSaved} onCancel={() => setAdicionando(false)} />
-        </DialogContent>
-      </Dialog>
+      <CategoryFormModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        category={editingCategory} 
+      />
     </div>
   )
 }

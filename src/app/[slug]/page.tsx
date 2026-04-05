@@ -1,39 +1,39 @@
 import { createClient } from '@supabase/supabase-js'
 import { getCategorias } from '@/lib/produtos'
 import Header from '@/components/Header'
-import CategoriaContent from '../[slug]/CategoriaContent'
+import CategoriaContent from './CategoriaContent'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
 export const dynamic = 'force-dynamic'
 
-export default async function ExplorarPage() {
-  const categorias = await getCategorias()
+export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
   
+  const categorias = await getCategorias()
+  const categoriaAtual = categorias.find(c => c.slug === slug)
+
+  if (!categoriaAtual) return <div className="text-white p-20 text-center font-black">CATEGORIA NÃO ENCONTRADA</div>
+
+  // Busca produtos da categoria
   const { data: produtos } = await supabase
     .from('produtos')
     .select('*')
+    .contains('categoriaSlugs', [slug])
     .order('createdAt', { ascending: false })
 
   const produtosIniciais = produtos || []
 
-  const categoriaExplorar = {
-    nome: 'Todos os Achados',
-    slug: 'explorar',
-    emoji: '🧭',
-    cor: '#22C55E',
-    descricao: 'Explore a base completa de ofertas garimpadas pelo T-Hex.'
-  }
-
-  const lojasPresentes = [...new Set(produtosIniciais.map(p => p.loja))]
+  // Extrai lojas e tags que REALMENTE existem nestes produtos
+  const lojasPresentes = [...new Set(produtosIniciais.map(p => p.lojaOrigem))]
   const tagsPresentes = [...new Set(produtosIniciais.flatMap(p => p.tags || []))].sort()
 
   return (
     <div className="min-h-screen bg-[#0F0F13] flex flex-col pb-20">
       <Header />
       <CategoriaContent 
-        slug="explorar"
-        categoriaAtual={categoriaExplorar as any}
+        slug={slug}
+        categoriaAtual={categoriaAtual}
         categorias={categorias}
         produtosIniciais={produtosIniciais}
         marketplacesDisponiveis={lojasPresentes}

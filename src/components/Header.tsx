@@ -2,159 +2,142 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { usePathname, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useState, useMemo, useRef, useEffect } from 'react'
-import data from '@/data/produtos.json'
+import { createClient } from '@supabase/supabase-js'
 import { formatarPreco } from '@/lib/produtos'
 
-// Função para remover acentos
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+
 const removeAcentos = (str: string) => {
-  return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  if (!str) return ""
+  return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 }
 
-
 export default function Header() {
-  const pathname = usePathname()
-  const router = useRouter()
   const [busca, setBusca] = useState('')
   const [isFocused, setIsFocused] = useState(false)
+  const [todosProdutos, setTodosProdutos] = useState<any[]>([])
   const searchRef = useRef<HTMLDivElement>(null)
+  const router = useRouter()
 
-  const slug = pathname?.split('/')[1]
-  const categoriaAtual = data.categorias.find(c => c.slug === slug)
-  const brandColor = categoriaAtual?.cor || '#22C55E'
-
-  // 1. Extrair e REMOVER DUPLICATAS de todos os produtos
-  const todosProdutos = useMemo(() => {
-    const all = data.categorias.flatMap(c => 
-      // Adicionamos o 'as any[]' para o TypeScript ignorar o fato de estar vazio
-      (c.produtos as any[]).map(p => ({ ...p, categoriaSlug: c.slug, categoriaCor: c.cor }))
-    )
-    
-    // Filtro de unicidade: Mantém apenas 1 produto por ID
-    const unicos = new Map()
-    all.forEach(p => {
-      if (!unicos.has(p.id)) {
-        unicos.set(p.id, p)
-      }
+  useEffect(() => {
+    supabase.from('produtos').select('*').then(({ data, error }) => {
+      if (error) console.error("Erro ao carregar produtos:", error)
+      else if (data) setTodosProdutos(data)
     })
-    
-    return Array.from(unicos.values())
   }, [])
 
-  // 2. Filtrar produtos baseado no que o usuário digita (mínimo 2 letras)
+  useEffect(() => {
+    const clickOut = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) setIsFocused(false)
+    }
+    document.addEventListener("mousedown", clickOut)
+    return () => document.removeEventListener("mousedown", clickOut)
+  }, [])
+
   const resultadosBusca = useMemo(() => {
     if (busca.trim().length < 2) return []
-    // Removemos os acentos do termo da busca
-    const termo = removeAcentos(busca.toLowerCase())
+    
+    const termosDigitados = removeAcentos(busca).split(' ').filter(Boolean)
+    
     return todosProdutos
       .filter(p => {
-        // Removemos acentos do nome e da loja antes de comparar
-        const nomeSemAcento = removeAcentos(p.nome.toLowerCase());
-        const lojaSemAcento = removeAcentos(p.loja.toLowerCase());
-        return nomeSemAcento.includes(termo) || lojaSemAcento.includes(termo);
+        const nomeNorm = removeAcentos(p.nome)
+        const lojaNorm = removeAcentos(p.lojaOrigem || p.loja || '')
+        const tagsNorm = Array.isArray(p.tags) ? p.tags.map((t: string) => removeAcentos(t)).join(' ') : ''
+        
+        const textoCompletoDoProduto = `${nomeNorm} ${lojaNorm} ${tagsNorm}`
+
+        return termosDigitados.every(termo => textoCompletoDoProduto.includes(termo))
       })
-      .slice(0, 5)
+      .slice(0, 6)
   }, [busca, todosProdutos])
 
-  // 3. Fechar dropdown ao clicar fora
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
-        setIsFocused(false)
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [])
-
-  function handleSearch(e: React.FormEvent) {
-    e.preventDefault()
-    if (busca.trim() && resultadosBusca.length > 0) {
-      router.push(`/busca?q=${encodeURIComponent(busca)}`)
-      setIsFocused(false)
-    }
-  }
-
   return (
-    <header className="sticky top-0 z-50 w-full bg-[#1A1A24]/90 backdrop-blur-md border-b border-[#2A2A35]">
-      <div className="mx-auto flex h-20 w-full max-w-7xl items-center justify-between px-4 md:px-8">
+    <header className="sticky top-0 z-50 w-full bg-[#1A1A24]/90 backdrop-blur-md border-b border-[#2A2A35] transition-colors duration-500">
+      <div className="mx-auto flex h-20 w-full max-w-[1600px] items-center justify-between px-3 md:px-8 gap-3 md:gap-4">
         
-        {/* LOGO DINÂMICO */}
-        <Link href="/" className="flex items-center gap-3 shrink-0 transition-transform hover:scale-105">
-          <div className="relative w-12 h-12 sm:w-14 sm:h-14 drop-shadow-md">
-            <Image src="/assets/mascot/icone3.png" alt="T-Hex" fill sizes="86px" className="object-contain" />
+        <Link href="/" className="flex items-center gap-2 md:gap-3 shrink-0 transition-transform hover:scale-105 group">
+          <div className="relative w-10 h-10 sm:w-14 sm:h-14 drop-shadow-md">
+            <Image src="/assets/mascot/icone3.png" alt="Logo" fill className="object-contain" />
           </div>
-          <span className="hidden sm:block text-2xl font-black tracking-tight text-white uppercase">
-            <span style={{ color: brandColor }} className="transition-colors duration-500">T-HEX</span> INDICA
+          <span className="hidden lg:block text-2xl font-black text-white uppercase tracking-tighter">
+            <span style={{ color: 'var(--brand-color, #22C55E)' }} className="transition-colors duration-500">T-HEX</span> INDICA
           </span>
         </Link>
 
-        {/* BARRA DE BUSCA INTELIGENTE */}
-        <div className="flex-1 max-w-2xl px-4 md:px-8 relative" ref={searchRef}>
-          <form onSubmit={handleSearch} className="relative flex w-full items-center group">
+        <div className="flex-1 max-w-xl relative" ref={searchRef}>
+          <div className="relative group">
             <input
               type="text"
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
               onFocus={() => setIsFocused(true)}
-              placeholder="Buscar ofertas, produtos..."
-              className="w-full h-11 rounded-full bg-[#0F0F13] border border-[#2A2A35] pl-5 pr-12 py-2 text-sm text-white placeholder-[#A1A1AA] focus:border-[#22C55E] focus:outline-none focus:ring-1 focus:ring-[#22C55E] transition-all"
+              placeholder="Buscar ofertas..."
+              className="w-full h-10 md:h-11 rounded-full bg-[#0F0F13] border border-[#2A2A35] pl-4 md:pl-5 pr-10 md:pr-12 text-xs md:text-sm text-white focus:outline-none transition-all duration-300"
+              style={{
+                borderColor: isFocused ? 'var(--brand-color, #22C55E)' : '#2A2A35'
+              }}
             />
-            <button 
-              type="submit" 
-              className={`absolute right-4 transition-colors ${resultadosBusca.length > 0 ? 'text-[#22C55E] cursor-pointer' : 'text-[#A1A1AA] cursor-not-allowed opacity-50'}`}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            </button>
-          </form>
+            <div className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 text-gray-500">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="md:w-[18px] md:h-[18px]"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </div>
+          </div>
 
-          {/* DROPDOWN DE PREVIEW */}
           {isFocused && busca.trim().length >= 2 && (
-            <div className="absolute top-14 left-4 right-8 bg-[#1A1A24] border border-[#2A2A35] rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.6)] overflow-hidden z-50">
+            <div className="absolute top-12 md:top-14 left-0 right-0 bg-[#1A1A24] border border-[#2A2A35] rounded-2xl shadow-2xl overflow-hidden z-50">
               {resultadosBusca.length > 0 ? (
                 <ul>
-                  {resultadosBusca.map((prod) => (
-                    <li key={prod.id}>
-                      <a 
-                        href={prod.link_afiliado} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-4 p-3 hover:bg-[#2A2A35] transition-colors border-b border-[#2A2A35]/50 last:border-0"
-                        onClick={() => setIsFocused(false)}
-                      >
-                        <div className="relative h-12 w-12 rounded-lg bg-[#0F0F13] overflow-hidden shrink-0">
-                          {prod.imagem && <Image src={prod.imagem} alt={prod.nome} fill className="object-cover" />}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-bold text-white truncate">{prod.nome}</p>
-                          <p className="text-xs font-black" style={{ color: prod.categoriaCor }}>{formatarPreco(prod.preco)}</p>
-                        </div>
-                      </a>
-                    </li>
-                  ))}
+                  {resultadosBusca.map((prod) => {
+                    const imgUrl = prod.imagem_url || prod.imagemUrl || prod.imagem || ''
+                    const linkAfiliado = prod.link_afiliado || prod.linkAfiliado || '#'
+
+                    return (
+                      <li key={prod.id}>
+                        <a href={linkAfiliado} target="_blank" rel="noreferrer" className="flex items-center gap-3 md:gap-4 p-3 hover:bg-[#2A2A35] border-b border-[#2A2A35]/50 last:border-0 group/item">
+                          {imgUrl && (
+                            <img src={imgUrl} alt={prod.nome} className="h-8 w-8 md:h-10 md:w-10 rounded bg-white object-contain shrink-0" />
+                          )}
+                          <div className="min-w-0">
+                            <p className="text-xs md:text-sm font-bold text-white truncate">{prod.nome}</p>
+                            <p className="text-[10px] md:text-xs font-black transition-colors" style={{ color: 'var(--brand-color, #22C55E)' }}>{formatarPreco(prod.preco)}</p>
+                          </div>
+                        </a>
+                      </li>
+                    )
+                  })}
                 </ul>
               ) : (
-                <div className="p-4 text-center text-sm text-[#A1A1AA]">
-                  Nenhum achadinho encontrado para "<span className="text-white font-bold">{busca}</span>"
+                <div className="p-4 text-center text-xs text-gray-500 font-bold uppercase tracking-widest">
+                  Nenhum achadinho encontrado
                 </div>
               )}
             </div>
           )}
         </div>
 
-        {/* ÍCONES DE AÇÃO */}
-        <div className="flex items-center gap-2 shrink-0">
-          {/* Botão Explorar (Texto no Desktop, Bússola no Mobile) */}
-          <Link href="/explorar" className="hidden md:flex items-center gap-2 px-4 h-10 rounded-full font-bold text-sm bg-white/5 text-white hover:bg-[#22C55E] hover:text-[#0F0F13] transition-all">
+        <div className="flex items-center gap-2 md:gap-3">
+          {/* CORREÇÃO UX MOBILE: Removido o hidden, ajustado padding e text-size no mobile */}
+          <Link 
+            href="/explorar" 
+            className="flex px-3 md:px-5 h-9 md:h-10 items-center rounded-full bg-white/5 text-white font-bold text-[10px] md:text-xs uppercase transition-all hover:text-[#0F0F13] whitespace-nowrap"
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--brand-color').trim() || '#22C55E'
+              e.currentTarget.style.color = '#0F0F13'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)'
+              e.currentTarget.style.color = 'white'
+            }}
+          >
             Explorar
           </Link>
-          <Link href="/explorar" className="md:hidden flex h-10 w-10 items-center justify-center rounded-full hover:bg-white/5 text-[#A1A1AA] hover:text-[#22C55E] transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
-          </Link>
-
-          <Link href="/sobre" className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-white/5 text-[#A1A1AA] hover:text-[#22C55E] transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+          <Link href="/sobre" className="flex h-9 w-9 md:h-10 md:w-10 items-center justify-center rounded-full hover:bg-white/5 text-[#A1A1AA] transition-colors shrink-0"
+             onMouseEnter={(e) => e.currentTarget.style.color = getComputedStyle(document.documentElement).getPropertyValue('--brand-color').trim() || '#22C55E'}
+             onMouseLeave={(e) => e.currentTarget.style.color = '#A1A1AA'}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="md:w-[22px] md:h-[22px]"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
           </Link>
         </div>
       </div>
