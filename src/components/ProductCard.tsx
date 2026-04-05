@@ -9,6 +9,8 @@ interface ProductCardProps {
   forceColor?: string      // Prop para forçar qualquer cor (ex: Laranja)
 }
 
+
+
 const LOJA_LABEL: Record<string, string> = {
   amazon: 'Amazon', shopee: 'Shopee', magalu: 'Magalu',
   mercadolivre: 'Mercado Livre', americanas: 'Americanas',
@@ -16,15 +18,19 @@ const LOJA_LABEL: Record<string, string> = {
 }
 
 export default function ProductCard({ produto, categoria, brandColorOnly, forceColor }: ProductCardProps) {
-  // A LÓGICA MESTRA DE CORES: 
+  // A LÓGICA MESTRA DE CORES:
   // 1. Se tiver forceColor, usa ele.
   // 2. Se for brandColorOnly, usa o verde T-Hex (#22C55E).
   // 3. Se não, usa a cor da categoria.
-  const baseColor = forceColor ? forceColor : (brandColorOnly ? '#22C55E' : (categoria.cor || '#22C55E'))
+  const baseColor = forceColor ? forceColor : (brandColorOnly ? '#22C55E' : (categoria?.cor || '#22C55E'))
+  
+  // 👉 COLE AQUI: Agora sim, a variável "produto" existe neste escopo!
+  const precoOriginalReal = (produto as any).precoOriginal || produto.preco_original;
 
   return (
     <a
       href={produto.link_afiliado || (produto as any).linkAfiliado || (produto as any).link || '#'}
+// ... resto do seu código
       target="_blank"
       rel="noopener noreferrer sponsored"
       className="group flex flex-col overflow-hidden rounded-[24px] bg-[#1A1A24] border border-[#2A2A35] transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.5)] relative"
@@ -91,11 +97,13 @@ export default function ProductCard({ produto, categoria, brandColorOnly, forceC
         </p>
         
         <div className="mb-5">
-          {(produto.preco_original || produto.preco_original) && (
+          {/* Validação de UX: Só mostra o preço riscado se ele existir E for maior que o preço atual */}
+          {precoOriginalReal && precoOriginalReal > produto.preco && (
             <p className="text-[11px] text-[#A1A1AA] line-through opacity-60 mb-0.5 font-medium">
-              {formatarPreco(produto.preco_original || produto.preco_original || 0)}
+              {formatarPreco(precoOriginalReal)}
             </p>
           )}
+          
           {/* PREÇO (Usa a cor base dinamicamente via style) */}
           <p className="text-xl font-black leading-none tracking-tight" style={{ color: baseColor }}>
             {formatarPreco(produto.preco)}

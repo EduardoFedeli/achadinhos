@@ -39,15 +39,23 @@ export async function POST(req: Request) {
       preco = parseFloat(limpo)
     }
 
-    // 4. Preço Original (Riscado) - MELHORADO
+    // 4. Preço Original (Riscado) - CAÇADOR MODO HARD
     let precoOriginalStr = $('.a-price.a-text-price span.a-offscreen').first().text().trim() || 
+                           $('.basisPrice .a-offscreen').first().text().trim() ||
                            $('.a-text-strike').first().text().trim() ||
                            $('#priceBlock_listprice_column .a-color-secondary').first().text().trim()
     
+    // A Amazon às vezes buga e retorna "R$ 59,90R$ 59,90". Essa regex extrai só o primeiro valor limpo.
+    if (precoOriginalStr.length > 15) {
+      const match = precoOriginalStr.match(/R\$\s*\d+[\.,]\d{2}/)
+      if (match) precoOriginalStr = match[0]
+    }
+
     let precoOriginal = null
     if (precoOriginalStr) {
       const limpoOrig = precoOriginalStr.replace(/[^\d,]/g, '').replace(',', '.')
       const valorParsed = parseFloat(limpoOrig)
+      // Só aceita o preço original se ele for genuinamente maior que o preço atual (evita falsos positivos)
       if (valorParsed > preco) {
         precoOriginal = valorParsed
       }

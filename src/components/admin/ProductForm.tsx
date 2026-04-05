@@ -36,7 +36,8 @@ export default function ProductForm({ categorias = [], produto, onSave, onCancel
   const [selectedCategorias, setSelectedCategorias] = useState<string[]>(initialCategories)
   
   const [preco, setPreco] = useState(produto?.preco?.toString() ?? '')
-  const [precoOriginal, setPrecoOriginal] = useState(produto?.preco_original?.toString() ?? '')
+  // Lemos as duas versões para garantir que pegamos do banco, seja lá como ele cuspir o dado
+  const [precoOriginal, setPrecoOriginal] = useState((produto as any)?.precoOriginal?.toString() || produto?.preco_original?.toString() || '')
   const [desconto, setDesconto] = useState(produto?.desconto_pct?.toString() ?? '')
   const [imagem, setImagem] = useState(produto?.imagem ?? '')
   const [linkAfiliado, setLinkAfiliado] = useState(produto?.linkAfiliado || produto?.link_afiliado || '')
