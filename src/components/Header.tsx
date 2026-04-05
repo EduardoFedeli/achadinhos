@@ -32,8 +32,6 @@ export default function Header() {
     )
     
     // Filtro de unicidade: Mantém apenas 1 produto por ID
-    
-    // Filtro de unicidade: Mantém apenas 1 produto por ID
     const unicos = new Map()
     all.forEach(p => {
       if (!unicos.has(p.id)) {

@@ -195,19 +195,22 @@ export default function ProductForm({ categorias = [], produto, onSave, onCancel
               {categorias?.map(c => {
                 const isSelected = selectedCategorias.includes(c.slug)
                 return (
-                  <Badge
-                    key={c.slug}
-                    variant={isSelected ? "default" : "outline"}
-                    onClick={() => toggleCategoria(c.slug)}
-                    className={`cursor-pointer px-2 py-1 text-xs select-none transition-colors rounded-md ${
-                      isSelected 
-                        ? 'bg-primary text-primary-foreground hover:bg-primary/90 border-transparent' 
-                        : 'bg-[#0F0F13] border-[#2A2A35] text-muted-foreground hover:border-primary/50 hover:text-foreground'
-                    }`}
-                  >
-                    {c.emoji} {c.nome}
-                  </Badge>
-                )
+                    <Badge
+                      key={c.slug}
+                      variant="outline"
+                      onClick={() => toggleCategoria(c.slug)}
+                      style={{
+                        backgroundColor: isSelected ? c.cor : 'transparent',
+                        borderColor: isSelected ? c.cor : '#2A2A35',
+                        color: isSelected ? '#fff' : '#A1A1AA'
+                      }}
+                      className={`cursor-pointer px-2 py-1 text-xs select-none transition-all rounded-md border ${
+                        !isSelected ? 'hover:border-primary/50 hover:text-foreground bg-[#0F0F13]' : ''
+                      }`}
+                    >
+                      {c.emoji} {c.nome}
+                    </Badge>
+                  )
               })}
             </div>
           </div>

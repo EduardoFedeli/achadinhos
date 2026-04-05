@@ -1,31 +1,33 @@
-import { getCategorias, getProdutosOferta } from '@/lib/produtos'
+import { createClient } from '@supabase/supabase-js'
+import { getCategorias } from '@/lib/produtos'
 
-export default function DashboardPage() {
+export const dynamic = 'force-dynamic'
+
+export default async function DashboardPage() {
   const categorias = getCategorias()
-  
-  // Desduplicar produtos para a contagem geral do dashboard ser precisa
-  const todosProdutos = categorias.flatMap(c => c.produtos)
-  const produtosUnicos = new Set(todosProdutos.map(p => p.id)).size
-  
-  const emOferta = getProdutosOferta().length
+  const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
-  const stats = [
-    { label: 'Categorias', value: categorias.length, emoji: '📂' },
-    { label: 'Produtos Únicos', value: produtosUnicos, emoji: '📦' },
-    { label: 'Em oferta', value: emOferta, emoji: '💰' },
-  ]
+  // Busca total de produtos e produtos em oferta
+  const { data: produtos } = await supabase.from('produtos').select('id, precoOriginal, preco')
+  
+  const totalProdutos = produtos?.length || 0
+  const emOferta = produtos?.filter(p => p.precoOriginal && p.precoOriginal > p.preco).length || 0
 
   return (
-    <div>
-      <h1 className="mb-6 text-2xl font-bold text-foreground">Dashboard</h1>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        {stats.map(s => (
-          <div key={s.label} className="rounded-2xl bg-card border border-border p-5 shadow-sm transition-colors hover:border-border/80">
-            <p className="text-3xl">{s.emoji}</p>
-            <p className="mt-2 text-3xl font-black text-foreground">{s.value}</p>
-            <p className="text-sm font-medium text-muted-foreground">{s.label}</p>
-          </div>
-        ))}
+    <div className="p-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-card p-6 rounded-2xl border border-border">
+          <p className="text-muted-foreground">Categorias</p>
+          <h3 className="text-4xl font-black">{categorias.length}</h3>
+        </div>
+        <div className="bg-card p-6 rounded-2xl border border-border">
+          <p className="text-muted-foreground">Produtos Únicos</p>
+          <h3 className="text-4xl font-black">{totalProdutos}</h3>
+        </div>
+        <div className="bg-card p-6 rounded-2xl border border-border">
+          <p className="text-muted-foreground">Em oferta</p>
+          <h3 className="text-4xl font-black">{emOferta}</h3>
+        </div>
       </div>
     </div>
   )
