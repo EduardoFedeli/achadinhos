@@ -13,6 +13,7 @@ const LOJAS: Loja[] = ['amazon', 'shopee', 'magalu', 'mercadolivre', 'americanas
 interface ProdutoComCategoria extends Produto {
   categoriaSlug?: string
   categoriaSlugs?: string[]
+  linkAfiliado?: string // Adicionamos essa linha para o TS parar de chorar
 }
 
 interface ProductFormProps {
@@ -36,7 +37,7 @@ export default function ProductForm({ categorias = [], produto, onSave, onCancel
   const [precoOriginal, setPrecoOriginal] = useState(produto?.preco_original?.toString() ?? '')
   const [desconto, setDesconto] = useState(produto?.desconto_pct?.toString() ?? '')
   const [imagem, setImagem] = useState(produto?.imagem ?? '')
-  const [linkAfiliado, setLinkAfiliado] = useState(produto?.link_afiliado ?? '')
+  const [linkAfiliado, setLinkAfiliado] = useState(produto?.linkAfiliado || produto?.link_afiliado || '')
   const [loja, setLoja] = useState<Loja>((produto?.loja as Loja) ?? 'amazon')
   
   const [tagInput, setTagInput] = useState('')
