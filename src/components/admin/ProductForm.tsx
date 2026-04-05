@@ -1,19 +1,21 @@
 'use client'
 
-import { useState, FormEvent } from 'react'
+import { useState, useEffect, FormEvent } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
 import type { Produto, Categoria, Loja } from '@/types'
+import { createClient } from '@supabase/supabase-js'
 
-const LOJAS: Loja[] = ['amazon', 'shopee', 'magalu', 'mercadolivre', 'americanas', 'casasbahia', 'centauro', 'aliexpress']
+// Inicializa a conexão com o Supabase
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
 interface ProdutoComCategoria extends Produto {
   categoriaSlug?: string
   categoriaSlugs?: string[]
-  linkAfiliado?: string // Adicionamos essa linha para o TS parar de chorar
+  linkAfiliado?: string 
 }
 
 interface ProductFormProps {
@@ -26,7 +28,7 @@ interface ProductFormProps {
 export default function ProductForm({ categorias = [], produto, onSave, onCancel }: ProductFormProps) {
   const isEdit = !!produto
   const [nome, setNome] = useState(produto?.nome ?? '')
-  
+
   const initialCategories = produto?.categoriaSlugs?.length 
     ? produto.categoriaSlugs 
     : (produto?.categoriaSlug ? [produto.categoriaSlug] : [categorias?.[0]?.slug ?? ''])
@@ -38,7 +40,7 @@ export default function ProductForm({ categorias = [], produto, onSave, onCancel
   const [desconto, setDesconto] = useState(produto?.desconto_pct?.toString() ?? '')
   const [imagem, setImagem] = useState(produto?.imagem ?? '')
   const [linkAfiliado, setLinkAfiliado] = useState(produto?.linkAfiliado || produto?.link_afiliado || '')
-  const [loja, setLoja] = useState<Loja>((produto?.loja as Loja) ?? 'amazon')
+  const [loja, setLoja] = useState<string>((produto?.loja as string) ?? 'amazon')
   
   const [tagInput, setTagInput] = useState('')
   const [tags, setTags] = useState<string[]>(produto?.tags ?? [])
@@ -52,6 +54,15 @@ export default function ProductForm({ categorias = [], produto, onSave, onCancel
   )
   const [loading, setLoading] = useState(false)
   const [isExtracting, setIsExtracting] = useState(false)
+
+  // ESTADO DOS MARKETPLACES (Vindo direto do Supabase)
+  const [marketplaces, setMarketplaces] = useState<any[]>([])
+
+  useEffect(() => {
+    supabase.from('marketplaces').select('*').eq('ativo', true).then(({ data }) => {
+      if (data) setMarketplaces(data)
+    })
+  }, [])
 
   function handlePrecoOriginalChange(v: string) {
     setPrecoOriginal(v)
@@ -106,49 +117,68 @@ export default function ProductForm({ categorias = [], produto, onSave, onCancel
   }
 
   async function handleExtrairDados() {
-    if (!linkAfiliado || (!linkAfiliado.includes('amazon') && !linkAfiliado.includes('amzn.to'))) {
-      alert('Cole um link válido da Amazon primeiro!')
+    if (!linkAfiliado) {
+      alert('Cole um link primeiro!')
       return
     }
 
-    setIsExtracting(true)
-    try {
-      const res = await fetch('/api/scraper', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: linkAfiliado })
-      })
-
-      const data = await res.json()
-
-      if (res.ok) {
-        if (data.nome) setNome(data.nome)
-        if (data.imagem) setImagem(data.imagem)
-        setLoja('amazon')
-
-        // Preenche os preços e já calcula o desconto!
-        if (data.preco) {
-          setPreco(data.preco.toString())
-          if (data.preco_original) {
-            setPrecoOriginal(data.preco_original.toString())
-            // Calcula o desconto real
-            const descCalc = Math.round((1 - (data.preco / data.preco_original)) * 100)
-            setDesconto(descCalc.toString())
-          } else {
-            setPrecoOriginal('')
-            setDesconto('')
-          }
+    // 1. AUTO-DETECT DA LOJA
+    let lojaDetectada = ''
+    for (const mk of marketplaces) {
+      if (mk.dominios) {
+        const dominiosList = mk.dominios.split(',').map((d: string) => d.trim().toLowerCase())
+        if (dominiosList.some((dominio: string) => linkAfiliado.toLowerCase().includes(dominio))) {
+          lojaDetectada = mk.slug
+          setLoja(mk.slug) 
+          break
         }
-      } else {
-        alert(`Erro do T-Hex: ${data.error}`)
       }
-    } catch (error) {
-      alert('Falha na comunicação com o robô caçador.')
-    } finally {
-      setIsExtracting(false)
+    }
+
+    if (!lojaDetectada) {
+      alert('O link informado não pertence a nenhum Marketplace ativo cadastrado.')
+      return
+    }
+
+    // 2. EXTRAÇÃO DE DADOS (Só deixa passar se for Amazon por enquanto)
+    if (lojaDetectada === 'amazon') {
+      setIsExtracting(true)
+      try {
+        const res = await fetch('/api/scraper', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: linkAfiliado })
+        })
+
+        const data = await res.json()
+
+        if (res.ok) {
+          if (data.nome) setNome(data.nome)
+          if (data.imagem) setImagem(data.imagem)
+
+          if (data.preco) {
+            setPreco(data.preco.toString())
+            if (data.preco_original) {
+              setPrecoOriginal(data.preco_original.toString())
+              const descCalc = Math.round((1 - (data.preco / data.preco_original)) * 100)
+              setDesconto(descCalc.toString())
+            } else {
+              setPrecoOriginal('')
+              setDesconto('')
+            }
+          }
+        } else {
+          alert(`Erro do T-Hex: ${data.error}`)
+        }
+      } catch (error) {
+        alert('Falha na comunicação com o robô caçador.')
+      } finally {
+        setIsExtracting(false)
+      }
+    } else {
+      alert(`Loja auto-selecionada: ${lojaDetectada.toUpperCase()}. Robô de extração em construção para esta loja.`)
     }
   }
-
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -184,7 +214,7 @@ export default function ProductForm({ categorias = [], produto, onSave, onCancel
       desconto_pct: desconto ? parseInt(desconto) : undefined,
       imagem: imagemLimpa || '',
       link_afiliado: linkLimpo,
-      loja,
+      loja: loja as Loja,
       tags: tags.length > 0 ? tags : undefined,
       destaque,
       novo,
@@ -208,7 +238,6 @@ export default function ProductForm({ categorias = [], produto, onSave, onCancel
     if (res.ok) {
       onSave()
     } else {
-      // Isso vai pegar o erro exato que o backend mandou e jogar na sua tela
       const erroData = await res.json()
       alert(`ERRO DO SUPABASE: ${JSON.stringify(erroData)}`)
       setLoading(false)
@@ -218,7 +247,6 @@ export default function ProductForm({ categorias = [], produto, onSave, onCancel
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4 text-foreground pb-2">
       
-      {/* GRID SIMPLIFICADO E PERFEITO: 1 coluna no mobile, 2 colunas no desktop */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
         {/* BLOCO 1: Informações Básicas */}
@@ -271,10 +299,12 @@ export default function ProductForm({ categorias = [], produto, onSave, onCancel
             <Label className="text-xs text-muted-foreground">Loja Origem <span className="text-primary">*</span></Label>
             <select
               value={loja}
-              onChange={e => setLoja(e.target.value as Loja)}
-              className="flex h-9 w-full items-center justify-between rounded-lg border border-[#2A2A35] bg-[#0F0F13] px-3 py-1 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              onChange={e => setLoja(e.target.value)}
+              className="flex h-9 w-full items-center justify-between rounded-lg border border-[#2A2A35] bg-[#0F0F13] px-3 py-1 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary uppercase"
             >
-              {LOJAS.map(l => <option key={l} value={l}>{l.toUpperCase()}</option>)}
+              {marketplaces.map(mk => (
+                <option key={mk.slug} value={mk.slug}>{mk.nome.toUpperCase()}</option>
+              ))}
             </select>
           </div>
 
@@ -353,11 +383,12 @@ export default function ProductForm({ categorias = [], produto, onSave, onCancel
           </div>
 
           <div className="space-y-1 flex-1">
-            <Label className="text-xs text-muted-foreground">Link do Produto (Amazon) <span className="text-primary">*</span></Label>
+            {/* O Texto "Amazon" foi removido daqui já que agora é dinâmico */}
+            <Label className="text-xs text-muted-foreground">Link do Produto <span className="text-primary">*</span></Label>
             <div className="flex gap-2">
               <Input 
                 value={linkAfiliado} onChange={e => setLinkAfiliado(e.target.value)} required
-                placeholder="https://amzn.to/..." className="bg-[#0F0F13] border-[#2A2A35] flex-1 h-9 text-sm rounded-lg"
+                placeholder="https://..." className="bg-[#0F0F13] border-[#2A2A35] flex-1 h-9 text-sm rounded-lg"
               />
               <Button 
                 type="button" 

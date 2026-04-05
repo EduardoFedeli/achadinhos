@@ -8,21 +8,21 @@ export default async function CategoriasPage() {
   const categoriasBase = await getCategorias()
   const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
-  // Puxando todos os dados para garantir que não vamos perder a coluna certa
-  const { data: produtos } = await supabase.from('produtos').select('*')
+  const { data: produtos } = await supabase.from('produtos').select('categoriaSlugs')
 
   const categorias = categoriasBase.map(cat => {
     const contagem = produtos?.filter(p => {
-      // 1. Checa se está salvo no formato antigo (string simples)
-      if (p.categoriaSlug === cat.slug) return true;
+      if (!p.categoriaSlugs) return false;
       
-      // 2. Checa se está no formato novo (Array)
-      if (Array.isArray(p.categoriaSlugs) && p.categoriaSlugs.includes(cat.slug)) return true;
-      
-      // 3. Fallback: Se o banco de dados retornou o array como texto puro (ex: '["tech", "games"]')
-      if (typeof p.categoriaSlugs === 'string' && p.categoriaSlugs.includes(cat.slug)) return true;
+      // Converte o formato do banco para um Array que o JavaScript entende perfeitamente
+      let slugsArray = [];
+      if (Array.isArray(p.categoriaSlugs)) {
+        slugsArray = p.categoriaSlugs;
+      } else if (typeof p.categoriaSlugs === 'string') {
+        try { slugsArray = JSON.parse(p.categoriaSlugs); } catch (e) {}
+      }
 
-      return false;
+      return slugsArray.includes(cat.slug);
     }).length || 0;
 
     return {
