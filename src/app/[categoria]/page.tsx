@@ -13,7 +13,8 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { categoria: slug } = await params
-  const cat = getCategorias().find(c => c.slug === slug)
+  const categorias = await getCategorias() // O await que faltava!
+  const cat = categorias.find(c => c.slug === slug)
   if (!cat) return {}
   return {
     title: `${cat.nome} — T-Hex Indica`,
@@ -23,7 +24,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function CategoriaPage({ params }: PageProps) {
   const { categoria: slug } = await params
-  const todasCategorias = getCategorias()
+  const todasCategorias = await getCategorias() // O await que faltava!
   const catBase = todasCategorias.find(c => c.slug === slug)
   
   if (!catBase) notFound()
@@ -36,8 +37,6 @@ export default async function CategoriaPage({ params }: PageProps) {
     .contains('categoriaSlugs', [slug])
     .order('createdAt', { ascending: false })
 
-  // Nós "injetamos" os produtos reais do banco dentro do objeto da categoria 
-  // para o seu CategoriaContent achar que nada mudou
   const catAtualizada = {
     ...catBase,
     produtos: produtosRaw || []

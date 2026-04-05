@@ -18,30 +18,31 @@
 
 ## File Map
 
-| Arquivo | Ação | Responsabilidade |
-|---|---|---|
-| `src/types/index.ts` | Criar | Tipos `Produto` e `Categoria` |
-| `src/data/produtos.json` | Criar | Fonte de verdade — 6 categorias, ~4 produtos cada |
-| `src/lib/produtos.ts` | Criar | `getCategorias`, `getCategoria`, `getProdutosDestaque` |
-| `src/lib/produtos.test.ts` | Criar | Testes das funções da lib |
-| `vitest.config.ts` | Criar | Configuração do Vitest |
-| `src/app/globals.css` | Modificar | Tokens de cor da marca via `@theme` |
-| `src/app/layout.tsx` | Modificar | Metadata do site |
-| `src/components/Header.tsx` | Criar | Logo + ícones, sticky |
-| `src/components/HeroBanner.tsx` | Criar | Banner gradiente com CTA |
-| `src/components/SectionHeader.tsx` | Criar | Título de seção + link |
-| `src/components/CategoryGrid.tsx` | Criar | Pills de categoria centralizadas |
-| `src/components/ProductCard.tsx` | Criar | Card individual de produto |
-| `src/components/ProductGrid.tsx` | Criar | Grid 2 colunas de ProductCard |
-| `src/components/BottomNav.tsx` | Criar | Navegação fixa no rodapé |
-| `src/app/page.tsx` | Modificar | Homepage: todos os destaques |
-| `src/app/[categoria]/page.tsx` | Criar | Página de categoria filtrada |
+| Arquivo                            | Ação      | Responsabilidade                                       |
+| ---------------------------------- | --------- | ------------------------------------------------------ |
+| `src/types/index.ts`               | Criar     | Tipos `Produto` e `Categoria`                          |
+| `src/data/produtos.json`           | Criar     | Fonte de verdade — 6 categorias, ~4 produtos cada      |
+| `src/lib/produtos.ts`              | Criar     | `getCategorias`, `getCategoria`, `getProdutosDestaque` |
+| `src/lib/produtos.test.ts`         | Criar     | Testes das funções da lib                              |
+| `vitest.config.ts`                 | Criar     | Configuração do Vitest                                 |
+| `src/app/globals.css`              | Modificar | Tokens de cor da marca via `@theme`                    |
+| `src/app/layout.tsx`               | Modificar | Metadata do site                                       |
+| `src/components/Header.tsx`        | Criar     | Logo + ícones, sticky                                  |
+| `src/components/HeroBanner.tsx`    | Criar     | Banner gradiente com CTA                               |
+| `src/components/SectionHeader.tsx` | Criar     | Título de seção + link                                 |
+| `src/components/CategoryGrid.tsx`  | Criar     | Pills de categoria centralizadas                       |
+| `src/components/ProductCard.tsx`   | Criar     | Card individual de produto                             |
+| `src/components/ProductGrid.tsx`   | Criar     | Grid 2 colunas de ProductCard                          |
+| `src/components/BottomNav.tsx`     | Criar     | Navegação fixa no rodapé                               |
+| `src/app/page.tsx`                 | Modificar | Homepage: todos os destaques                           |
+| `src/app/[categoria]/page.tsx`     | Criar     | Página de categoria filtrada                           |
 
 ---
 
 ## Task 1: Vitest + TypeScript Types
 
 **Files:**
+
 - Create: `vitest.config.ts`
 - Create: `src/types/index.ts`
 
@@ -54,19 +55,20 @@ npm install -D vitest
 - [ ] **Criar `vitest.config.ts`**
 
 ```ts
-import { defineConfig } from 'vitest/config'
+import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
-    environment: 'node',
+    environment: "node",
     globals: true,
   },
-})
+});
 ```
 
 - [ ] **Adicionar script de teste no `package.json`**
 
 Abrir `package.json` e adicionar dentro de `"scripts"`:
+
 ```json
 "test": "vitest run",
 "test:watch": "vitest"
@@ -75,29 +77,29 @@ Abrir `package.json` e adicionar dentro de `"scripts"`:
 - [ ] **Criar `src/types/index.ts`**
 
 ```ts
-export type Loja = 'amazon' | 'shopee'
+export type Loja = "amazon" | "shopee";
 
 export interface Produto {
-  id: string
-  nome: string
-  preco: string
-  imagem: string | null
-  link_afiliado: string
-  loja: Loja
-  destaque: boolean
+  id: string;
+  nome: string;
+  preco: string;
+  imagem: string | null;
+  link_afiliado: string;
+  loja: Loja;
+  destaque: boolean;
 }
 
 export interface Categoria {
-  nome: string
-  slug: string
-  emoji: string
-  cor: string
-  descricao: string
-  produtos: Produto[]
+  nome: string;
+  slug: string;
+  emoji: string;
+  cor: string;
+  descricao: string;
+  produtos: Produto[];
 }
 
 export interface ProdutosData {
-  categorias: Categoria[]
+  categorias: Categoria[];
 }
 ```
 
@@ -113,6 +115,7 @@ git commit -m "chore: add vitest and TypeScript types"
 ## Task 2: produtos.json
 
 **Files:**
+
 - Create: `src/data/produtos.json`
 
 - [ ] **Criar `src/data/produtos.json`** com 6 categorias e 4 produtos cada:
@@ -406,60 +409,61 @@ git commit -m "feat: add produtos.json with 6 categories and 24 generic products
 ## Task 3: lib/produtos.ts com TDD
 
 **Files:**
+
 - Create: `src/lib/produtos.ts`
 - Create: `src/lib/produtos.test.ts`
 
 - [ ] **Criar `src/lib/produtos.test.ts`**
 
 ```ts
-import { describe, it, expect } from 'vitest'
-import { getCategorias, getCategoria, getProdutosDestaque } from './produtos'
+import { describe, it, expect } from "vitest";
+import { getCategorias, getCategoria, getProdutosDestaque } from "./produtos";
 
-describe('getCategorias', () => {
-  it('retorna todas as 6 categorias', () => {
-    const cats = getCategorias()
-    expect(cats).toHaveLength(6)
-  })
+describe("getCategorias", () => {
+  it("retorna todas as 6 categorias", () => {
+    const cats = getCategorias();
+    expect(cats).toHaveLength(6);
+  });
 
-  it('cada categoria tem slug, nome e emoji', () => {
-    const cats = getCategorias()
+  it("cada categoria tem slug, nome e emoji", () => {
+    const cats = getCategorias();
     for (const cat of cats) {
-      expect(cat.slug).toBeTruthy()
-      expect(cat.nome).toBeTruthy()
-      expect(cat.emoji).toBeTruthy()
+      expect(cat.slug).toBeTruthy();
+      expect(cat.nome).toBeTruthy();
+      expect(cat.emoji).toBeTruthy();
     }
-  })
-})
+  });
+});
 
-describe('getCategoria', () => {
-  it('retorna a categoria pelo slug', () => {
-    const cat = getCategoria('pets')
-    expect(cat).not.toBeNull()
-    expect(cat?.nome).toBe('Pets')
-  })
+describe("getCategoria", () => {
+  it("retorna a categoria pelo slug", () => {
+    const cat = getCategoria("pets");
+    expect(cat).not.toBeNull();
+    expect(cat?.nome).toBe("Pets");
+  });
 
-  it('retorna null para slug inexistente', () => {
-    const cat = getCategoria('nao-existe')
-    expect(cat).toBeNull()
-  })
-})
+  it("retorna null para slug inexistente", () => {
+    const cat = getCategoria("nao-existe");
+    expect(cat).toBeNull();
+  });
+});
 
-describe('getProdutosDestaque', () => {
-  it('retorna apenas produtos com destaque: true', () => {
-    const produtos = getProdutosDestaque()
-    expect(produtos.every(p => p.destaque)).toBe(true)
-  })
+describe("getProdutosDestaque", () => {
+  it("retorna apenas produtos com destaque: true", () => {
+    const produtos = getProdutosDestaque();
+    expect(produtos.every((p) => p.destaque)).toBe(true);
+  });
 
-  it('retorna produtos de múltiplas categorias', () => {
-    const produtos = getProdutosDestaque()
-    expect(produtos.length).toBeGreaterThan(1)
-  })
+  it("retorna produtos de múltiplas categorias", () => {
+    const produtos = getProdutosDestaque();
+    expect(produtos.length).toBeGreaterThan(1);
+  });
 
-  it('aceita limite opcional', () => {
-    const produtos = getProdutosDestaque(4)
-    expect(produtos).toHaveLength(4)
-  })
-})
+  it("aceita limite opcional", () => {
+    const produtos = getProdutosDestaque(4);
+    expect(produtos).toHaveLength(4);
+  });
+});
 ```
 
 - [ ] **Rodar o teste para confirmar que falha**
@@ -473,22 +477,22 @@ Expected: FAIL — "Cannot find module './produtos'"
 - [ ] **Criar `src/lib/produtos.ts`**
 
 ```ts
-import data from '../data/produtos.json'
-import type { Categoria, Produto } from '../types'
+import data from "../data/produtos.json";
+import type { Categoria, Produto } from "../types";
 
-const { categorias } = data as { categorias: Categoria[] }
+const { categorias } = data as { categorias: Categoria[] };
 
 export function getCategorias(): Categoria[] {
-  return categorias
+  return categorias;
 }
 
 export function getCategoria(slug: string): Categoria | null {
-  return categorias.find(c => c.slug === slug) ?? null
+  return categorias.find((c) => c.slug === slug) ?? null;
 }
 
 export function getProdutosDestaque(limite?: number): Produto[] {
-  const todos = categorias.flatMap(c => c.produtos.filter(p => p.destaque))
-  return limite ? todos.slice(0, limite) : todos
+  const todos = categorias.flatMap((c) => c.produtos.filter((p) => p.destaque));
+  return limite ? todos.slice(0, limite) : todos;
 }
 ```
 
@@ -512,6 +516,7 @@ git commit -m "feat: add produtos lib with getCategorias, getCategoria, getProdu
 ## Task 4: Tokens de cor no globals.css
 
 **Files:**
+
 - Modify: `src/app/globals.css`
 
 - [ ] **Abrir `src/app/globals.css` e substituir todo o conteúdo por:**
@@ -520,9 +525,9 @@ git commit -m "feat: add produtos lib with getCategorias, getCategoria, getProdu
 @import "tailwindcss";
 
 @theme {
-  --color-brand: #FF6B35;
-  --color-brand-yellow: #FFD23F;
-  --color-page-bg: #F5F5F5;
+  --color-brand: #ff6b35;
+  --color-brand-yellow: #ffd23f;
+  --color-page-bg: #f5f5f5;
 }
 ```
 
@@ -548,6 +553,7 @@ git commit -m "style: add brand color tokens to Tailwind theme"
 ## Task 5: Header
 
 **Files:**
+
 - Create: `src/components/Header.tsx`
 
 - [ ] **Criar `src/components/Header.tsx`**
@@ -575,7 +581,7 @@ export default function Header() {
         </button>
       </div>
     </header>
-  )
+  );
 }
 ```
 
@@ -599,18 +605,22 @@ git commit -m "feat: add Header component"
 ## Task 6: HeroBanner
 
 **Files:**
+
 - Create: `src/components/HeroBanner.tsx`
 
 - [ ] **Criar `src/components/HeroBanner.tsx`**
 
 ```tsx
-import Link from 'next/link'
+import Link from "next/link";
 
 export default function HeroBanner() {
   return (
     <section
       className="relative overflow-hidden px-5 pb-8 pt-7"
-      style={{ background: 'linear-gradient(135deg, #FF6B35 0%, #FF8C42 50%, #FFD23F 100%)' }}
+      style={{
+        background:
+          "linear-gradient(135deg, #FF6B35 0%, #FF8C42 50%, #FFD23F 100%)",
+      }}
     >
       {/* Círculos decorativos */}
       <div className="absolute -right-5 -top-5 h-36 w-36 rounded-full bg-white/10" />
@@ -620,7 +630,9 @@ export default function HeroBanner() {
         ✨ Curadoria semanal
       </p>
       <h1 className="mb-1.5 text-[26px] font-black leading-tight tracking-tight text-white">
-        Os melhores<br />achados pra você
+        Os melhores
+        <br />
+        achados pra você
       </h1>
       <p className="mb-5 text-sm text-white/90">
         Produtos selecionados da Amazon e Shopee
@@ -632,7 +644,7 @@ export default function HeroBanner() {
         Ver tudo →
       </Link>
     </section>
-  )
+  );
 }
 ```
 
@@ -648,20 +660,25 @@ git commit -m "feat: add HeroBanner component"
 ## Task 7: SectionHeader
 
 **Files:**
+
 - Create: `src/components/SectionHeader.tsx`
 
 - [ ] **Criar `src/components/SectionHeader.tsx`**
 
 ```tsx
-import Link from 'next/link'
+import Link from "next/link";
 
 interface SectionHeaderProps {
-  title: string
-  href?: string
-  linkLabel?: string
+  title: string;
+  href?: string;
+  linkLabel?: string;
 }
 
-export default function SectionHeader({ title, href, linkLabel = 'Ver mais →' }: SectionHeaderProps) {
+export default function SectionHeader({
+  title,
+  href,
+  linkLabel = "Ver mais →",
+}: SectionHeaderProps) {
   return (
     <div className="flex items-center justify-between px-5 pb-3 pt-5">
       <h2 className="text-[13px] font-extrabold uppercase tracking-wide text-gray-900">
@@ -673,7 +690,7 @@ export default function SectionHeader({ title, href, linkLabel = 'Ver mais →' 
         </Link>
       )}
     </div>
-  )
+  );
 }
 ```
 
@@ -689,24 +706,28 @@ git commit -m "feat: add SectionHeader component"
 ## Task 8: CategoryGrid
 
 **Files:**
+
 - Create: `src/components/CategoryGrid.tsx`
 
 - [ ] **Criar `src/components/CategoryGrid.tsx`**
 
 ```tsx
-import Link from 'next/link'
-import type { Categoria } from '../types'
+import Link from "next/link";
+import type { Categoria } from "../types";
 
 interface CategoryGridProps {
-  categorias: Categoria[]
-  slugAtivo?: string
+  categorias: Categoria[];
+  slugAtivo?: string;
 }
 
-export default function CategoryGrid({ categorias, slugAtivo }: CategoryGridProps) {
+export default function CategoryGrid({
+  categorias,
+  slugAtivo,
+}: CategoryGridProps) {
   return (
     <div className="flex flex-wrap justify-center gap-x-2.5 gap-y-4 px-5 pb-5">
-      {categorias.map(cat => {
-        const ativo = cat.slug === slugAtivo
+      {categorias.map((cat) => {
+        const ativo = cat.slug === slugAtivo;
         return (
           <Link
             key={cat.slug}
@@ -720,15 +741,15 @@ export default function CategoryGrid({ categorias, slugAtivo }: CategoryGridProp
               {cat.emoji}
             </div>
             <span
-              className={`text-[10px] font-bold ${ativo ? 'text-brand' : 'text-gray-500'}`}
+              className={`text-[10px] font-bold ${ativo ? "text-brand" : "text-gray-500"}`}
             >
               {cat.nome}
             </span>
           </Link>
-        )
+        );
       })}
     </div>
-  )
+  );
 }
 ```
 
@@ -744,22 +765,23 @@ git commit -m "feat: add CategoryGrid component"
 ## Task 9: ProductCard
 
 **Files:**
+
 - Create: `src/components/ProductCard.tsx`
 
 - [ ] **Criar `src/components/ProductCard.tsx`**
 
 ```tsx
-import type { Produto, Categoria } from '../types'
+import type { Produto, Categoria } from "../types";
 
 interface ProductCardProps {
-  produto: Produto
-  categoria: Categoria
+  produto: Produto;
+  categoria: Categoria;
 }
 
 const LOJA_LABEL: Record<string, string> = {
-  amazon: '🛒 Amazon',
-  shopee: '🏪 Shopee',
-}
+  amazon: "🛒 Amazon",
+  shopee: "🏪 Shopee",
+};
 
 export default function ProductCard({ produto, categoria }: ProductCardProps) {
   return (
@@ -800,7 +822,7 @@ export default function ProductCard({ produto, categoria }: ProductCardProps) {
         Ver oferta →
       </div>
     </a>
-  )
+  );
 }
 ```
 
@@ -816,31 +838,35 @@ git commit -m "feat: add ProductCard component"
 ## Task 10: ProductGrid
 
 **Files:**
+
 - Create: `src/components/ProductGrid.tsx`
 
 - [ ] **Criar `src/components/ProductGrid.tsx`**
 
 ```tsx
-import ProductCard from './ProductCard'
-import type { Produto, Categoria } from '../types'
+import ProductCard from "./ProductCard";
+import type { Produto, Categoria } from "../types";
 
 interface ProductGridProps {
-  produtos: Produto[]
-  categorias: Categoria[]
+  produtos: Produto[];
+  categorias: Categoria[];
 }
 
-export default function ProductGrid({ produtos, categorias }: ProductGridProps) {
+export default function ProductGrid({
+  produtos,
+  categorias,
+}: ProductGridProps) {
   // Monta um mapa id → categoria percorrendo os produtos de cada categoria
-  const catPorIdProduto = new Map<string, Categoria>()
+  const catPorIdProduto = new Map<string, Categoria>();
   for (const cat of categorias) {
     for (const p of cat.produtos) {
-      catPorIdProduto.set(p.id, cat)
+      catPorIdProduto.set(p.id, cat);
     }
   }
 
   return (
     <div className="grid grid-cols-2 gap-3 px-5">
-      {produtos.map(produto => (
+      {produtos.map((produto) => (
         <ProductCard
           key={produto.id}
           produto={produto}
@@ -848,7 +874,7 @@ export default function ProductGrid({ produtos, categorias }: ProductGridProps) 
         />
       ))}
     </div>
-  )
+  );
 }
 ```
 
@@ -864,45 +890,46 @@ git commit -m "feat: add ProductGrid component"
 ## Task 11: BottomNav
 
 **Files:**
+
 - Create: `src/components/BottomNav.tsx`
 
 - [ ] **Criar `src/components/BottomNav.tsx`**
 
 ```tsx
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const ITENS = [
-  { href: '/', label: 'Início', emoji: '🏠' },
-  { href: '/buscar', label: 'Buscar', emoji: '🔍' },
-  { href: '/ofertas', label: 'Ofertas', emoji: '🔥' },
-  { href: '/categorias', label: 'Categorias', emoji: '📂' },
-]
+  { href: "/", label: "Início", emoji: "🏠" },
+  { href: "/buscar", label: "Buscar", emoji: "🔍" },
+  { href: "/ofertas", label: "Ofertas", emoji: "🔥" },
+  { href: "/categorias", label: "Categorias", emoji: "📂" },
+];
 
 export default function BottomNav() {
-  const pathname = usePathname()
+  const pathname = usePathname();
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-10 flex justify-around border-t border-gray-100 bg-white pb-4 pt-2.5 shadow-[0_-2px_12px_rgba(0,0,0,0.06)]">
-      {ITENS.map(item => {
-        const ativo = pathname === item.href
+      {ITENS.map((item) => {
+        const ativo = pathname === item.href;
         return (
           <Link
             key={item.href}
             href={item.href}
             className={`flex flex-col items-center gap-0.5 text-[9px] font-semibold ${
-              ativo ? 'text-brand' : 'text-gray-400'
+              ativo ? "text-brand" : "text-gray-400"
             }`}
           >
             <span className="text-xl">{item.emoji}</span>
             {item.label}
           </Link>
-        )
+        );
       })}
     </nav>
-  )
+  );
 }
 ```
 
@@ -918,22 +945,23 @@ git commit -m "feat: add BottomNav client component"
 ## Task 12: Homepage (app/page.tsx)
 
 **Files:**
+
 - Modify: `src/app/page.tsx`
 
 - [ ] **Substituir todo o conteúdo de `src/app/page.tsx` por:**
 
 ```tsx
-import { getCategorias, getProdutosDestaque } from '../lib/produtos'
-import Header from '../components/Header'
-import HeroBanner from '../components/HeroBanner'
-import SectionHeader from '../components/SectionHeader'
-import CategoryGrid from '../components/CategoryGrid'
-import ProductGrid from '../components/ProductGrid'
-import BottomNav from '../components/BottomNav'
+import { getCategorias, getProdutosDestaque } from "../lib/produtos";
+import Header from "../components/Header";
+import HeroBanner from "../components/HeroBanner";
+import SectionHeader from "../components/SectionHeader";
+import CategoryGrid from "../components/CategoryGrid";
+import ProductGrid from "../components/ProductGrid";
+import BottomNav from "../components/BottomNav";
 
 export default function HomePage() {
-  const categorias = getCategorias()
-  const destaques = getProdutosDestaque()
+  const categorias = await getCategorias();
+  const destaques = getProdutosDestaque();
 
   return (
     <div className="min-h-screen bg-page-bg pb-20">
@@ -943,12 +971,17 @@ export default function HomePage() {
       <SectionHeader title="Categorias" href="/" linkLabel="Ver todas →" />
       <CategoryGrid categorias={categorias} />
 
-      <SectionHeader id="destaques" title="🔥 Em destaque" href="/" linkLabel="Ver mais →" />
+      <SectionHeader
+        id="destaques"
+        title="🔥 Em destaque"
+        href="/"
+        linkLabel="Ver mais →"
+      />
       <ProductGrid produtos={destaques} categorias={categorias} />
 
       <BottomNav />
     </div>
-  )
+  );
 }
 ```
 
@@ -997,49 +1030,45 @@ git commit -m "feat: implement homepage with hero, categories, and product grid"
 ## Task 13: Página de Categoria (app/[categoria]/page.tsx)
 
 **Files:**
+
 - Create: `src/app/[categoria]/page.tsx`
 
 - [ ] **Criar pasta e arquivo `src/app/[categoria]/page.tsx`**
 
 ```tsx
-import { notFound } from 'next/navigation'
-import { getCategorias, getCategoria } from '../../lib/produtos'
-import Header from '../../components/Header'
-import SectionHeader from '../../components/SectionHeader'
-import CategoryGrid from '../../components/CategoryGrid'
-import ProductGrid from '../../components/ProductGrid'
-import BottomNav from '../../components/BottomNav'
+import { notFound } from "next/navigation";
+import { getCategorias, getCategoria } from "../../lib/produtos";
+import Header from "../../components/Header";
+import SectionHeader from "../../components/SectionHeader";
+import CategoryGrid from "../../components/CategoryGrid";
+import ProductGrid from "../../components/ProductGrid";
+import BottomNav from "../../components/BottomNav";
 
 interface PageProps {
-  params: Promise<{ categoria: string }>
+  params: Promise<{ categoria: string }>;
 }
 
 export async function generateStaticParams() {
-  const categorias = getCategorias()
-  return categorias.map(c => ({ categoria: c.slug }))
+  const categorias = await getCategorias();
+  return categorias.map((c) => ({ categoria: c.slug }));
 }
 
 export default async function CategoriaPage({ params }: PageProps) {
-  const { categoria: slug } = await params
-  const cat = getCategoria(slug)
+  const { categoria: slug } = await params;
+  const cat = getCategoria(slug);
 
-  if (!cat) notFound()
+  if (!cat) notFound();
 
-  const categorias = getCategorias()
+  const categorias = await getCategorias();
 
   return (
     <div className="min-h-screen bg-page-bg pb-20">
       <Header />
 
       {/* Mini banner da categoria */}
-      <section
-        className="px-5 py-6"
-        style={{ background: cat.cor }}
-      >
+      <section className="px-5 py-6" style={{ background: cat.cor }}>
         <p className="text-3xl">{cat.emoji}</p>
-        <h1 className="mt-1 text-xl font-black text-gray-900">
-          {cat.nome}
-        </h1>
+        <h1 className="mt-1 text-xl font-black text-gray-900">{cat.nome}</h1>
         <p className="text-sm text-gray-500">{cat.descricao}</p>
         <p className="mt-1 text-xs font-semibold text-brand">
           {cat.produtos.length} achados
@@ -1054,7 +1083,7 @@ export default async function CategoriaPage({ params }: PageProps) {
 
       <BottomNav />
     </div>
-  )
+  );
 }
 ```
 
@@ -1086,6 +1115,7 @@ git commit -m "feat: add category page with static generation"
 ## Task 14: Metadata e ajustes finais
 
 **Files:**
+
 - Modify: `src/app/layout.tsx`
 
 - [ ] **Atualizar metadata em `src/app/layout.tsx`**
@@ -1094,9 +1124,10 @@ Substituir o bloco `export const metadata`:
 
 ```tsx
 export const metadata: Metadata = {
-  title: 'Achadinhos — Os melhores achados da internet',
-  description: 'Produtos selecionados da Amazon e Shopee organizados por categoria. Pets, Games, Esporte, Livros, Roupas e Casa.',
-}
+  title: "Achadinhos — Os melhores achados da internet",
+  description:
+    "Produtos selecionados da Amazon e Shopee organizados por categoria. Pets, Games, Esporte, Livros, Roupas e Casa.",
+};
 ```
 
 - [ ] **Atualizar `lang` do `<html>` para `pt-BR`**

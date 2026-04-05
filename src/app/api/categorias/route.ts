@@ -1,33 +1,17 @@
 import { NextResponse } from 'next/server'
-import fs from 'fs'
-import path from 'path'
-import type { ProdutosData, Categoria } from '@/types'
+import { createClient } from '@supabase/supabase-js'
 import { isAdminAuthenticated } from '@/lib/adminAuth'
 
-const DATA_FILE = path.join(process.cwd(), 'src', 'data', 'produtos.json')
-
-function readData(): ProdutosData {
-  return JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8')) as ProdutosData
-}
-
-function writeData(data: ProdutosData): void {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf-8')
-}
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 
 export async function POST(request: Request) {
-  if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+  if (!(await isAdminAuthenticated())) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+  try {
+    const cat = await request.json()
+    const { data, error } = await supabase.from('categorias').insert([cat]).select()
+    if (error) throw error
+    return NextResponse.json({ ok: true, data })
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
   }
-
-  const body = await request.json() as Omit<Categoria, 'produtos'>
-  const data = readData()
-
-  if (data.categorias.find(c => c.slug === body.slug)) {
-    return NextResponse.json({ error: 'Slug já existe' }, { status: 409 })
-  }
-
-  data.categorias.push({ ...body, produtos: [] })
-  writeData(data)
-
-  return NextResponse.json({ ok: true }, { status: 201 })
 }

@@ -123,9 +123,22 @@ export default function ProductForm({ categorias = [], produto, onSave, onCancel
 
       if (res.ok) {
         if (data.nome) setNome(data.nome)
-        if (data.preco) setPreco(data.preco.toString())
         if (data.imagem) setImagem(data.imagem)
-        setLoja('amazon') // Já seleciona a loja certa
+        setLoja('amazon')
+
+        // Preenche os preços e já calcula o desconto!
+        if (data.preco) {
+          setPreco(data.preco.toString())
+          if (data.preco_original) {
+            setPrecoOriginal(data.preco_original.toString())
+            // Calcula o desconto real
+            const descCalc = Math.round((1 - (data.preco / data.preco_original)) * 100)
+            setDesconto(descCalc.toString())
+          } else {
+            setPrecoOriginal('')
+            setDesconto('')
+          }
+        }
       } else {
         alert(`Erro do T-Hex: ${data.error}`)
       }

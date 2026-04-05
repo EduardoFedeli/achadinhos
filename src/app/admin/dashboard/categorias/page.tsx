@@ -5,7 +5,7 @@ import { createClient } from '@supabase/supabase-js'
 export const dynamic = 'force-dynamic'
 
 export default async function CategoriasPage() {
-  const categoriasBase = getCategorias()
+  const categoriasBase = await getCategorias() // O await que faltava!
   const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
   // Busca todos os produtos para contar

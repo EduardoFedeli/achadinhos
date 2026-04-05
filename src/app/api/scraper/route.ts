@@ -5,7 +5,7 @@ export async function POST(req: Request) {
   try {
     const { url } = await req.json()
 
-    if (!url || !url.includes('amazon')) {
+    if (!url || (!url.includes('amazon') && !url.includes('amzn.to'))) {
       return NextResponse.json({ error: 'Por enquanto, o T-Hex só sabe caçar na Amazon!' }, { status: 400 })
     }
 
@@ -34,22 +34,35 @@ export async function POST(req: Request) {
       imagem = $('#imgBlkFront').attr('src') || '' 
     }
 
-    // 3. Pega o Preço
-    // A Amazon esconde o preço em várias classes diferentes dependendo se tem promoção ou não
+    // 3. Pega o Preço Atual
     let precoStr = $('.a-price .a-offscreen').first().text().trim() || 
                    $('#priceblock_ourprice').text().trim() || 
                    $('#priceblock_dealprice').text().trim()
 
     let preco = 0
     if (precoStr) {
-      // Limpa "R$ 65,80" para "65.80" numérico
       const limpo = precoStr.replace(/[^\d,]/g, '').replace(',', '.')
       preco = parseFloat(limpo)
+    }
+
+    // 4. Pega o Preço Original (Riscado)
+    let precoOriginalStr = $('.a-text-price .a-offscreen').first().text().trim() || 
+                           $('.a-text-strike').first().text().trim()
+    
+    let precoOriginal = null
+    if (precoOriginalStr) {
+      const limpoOrig = precoOriginalStr.replace(/[^\d,]/g, '').replace(',', '.')
+      const valorParsed = parseFloat(limpoOrig)
+      // Só salva se o preço original for realmente maior que o preço atual
+      if (valorParsed > preco) {
+        precoOriginal = valorParsed
+      }
     }
 
     return NextResponse.json({ 
       nome: titulo, 
       preco: preco, 
+      preco_original: precoOriginal,
       imagem: imagem 
     })
 
