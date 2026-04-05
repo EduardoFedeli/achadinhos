@@ -52,7 +52,13 @@ export async function POST(request: Request) {
 }
 
 export async function GET() {
-  const { data, error } = await supabase.from('produtos').select('*').order('createdAt', { ascending: false })
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  const { data, error } = await supabase
+    .from('produtos')
+    .select('*')
+    .order('createdAt', { ascending: false }) // Traz os mais novos primeiro
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
   return NextResponse.json(data || [])
 }
