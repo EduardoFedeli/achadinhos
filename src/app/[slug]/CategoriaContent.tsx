@@ -82,9 +82,12 @@ export default function CategoriaContent({ slug, categoriaAtual, categorias, pro
           </div>
         </header>
 
-        <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex flex-col lg:flex-row gap-8 items-start">
           {/* PAINEL DE FILTROS DESKTOP: Oculto no celular (hidden lg:block) */}
-          <aside className="hidden lg:block w-[280px] shrink-0">
+          <aside className="hidden lg:block w-[280px] shrink-0 sticky top-28 z-10 max-h-[calc(100vh-140px)] overflow-y-auto scrollbar-none" style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
+            <style jsx global>{`
+              aside::-webkit-scrollbar { display: none !important; }
+            `}</style>
             <FilterPanel 
               filtros={filtros} 
               onFiltrosChange={setFiltros} 
