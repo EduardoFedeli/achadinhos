@@ -2,11 +2,14 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { isAdminAuthenticated } from '@/lib/adminAuth'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+// BLINDAGEM DE BUILD: Fornece URLs de fallback caso o Vercel tente ler o arquivo sem as env vars injetadas.
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://build-fallback.supabase.co'
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'build-fallback-key'
+
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 export async function POST(request: Request) {
+// ... resto do seu código permanece exatamente igual ...
   if (!(await isAdminAuthenticated())) {
     return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
   }
