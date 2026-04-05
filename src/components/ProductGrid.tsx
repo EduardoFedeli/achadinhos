@@ -8,10 +8,18 @@ interface ProductGridProps {
 }
 
 export default function ProductGrid({ produtos, categorias }: ProductGridProps) {
-  const catPorIdProduto = new Map<string, Categoria>()
+  // Novo modelo relacional: Cria o mapa baseando-se no 'categoriaSlugs' de cada produto
+  const catPorSlug = new Map<string, Categoria>()
   for (const cat of categorias) {
-    for (const p of cat.produtos) {
-      catPorIdProduto.set(p.id, cat)
+    catPorSlug.set(cat.slug, cat)
+  }
+
+  const catPorIdProduto = new Map<string, Categoria>()
+  for (const p of produtos) {
+    const slugDaCategoria = p.categoriaSlugs?.[0]
+    if (slugDaCategoria) {
+      const cat = catPorSlug.get(slugDaCategoria)
+      if (cat) catPorIdProduto.set(p.id, cat)
     }
   }
 
