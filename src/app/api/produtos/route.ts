@@ -1,52 +1,51 @@
 import { NextResponse } from 'next/server'
-import fs from 'fs'
-import path from 'path'
-import type { ProdutosData, Produto } from '@/types'
+import { createClient } from '@supabase/supabase-js'
 import { isAdminAuthenticated } from '@/lib/adminAuth'
 
-const DATA_FILE = path.join(process.cwd(), 'src', 'data', 'produtos.json')
-
-function readData(): ProdutosData {
-  return JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8')) as ProdutosData
-}
-
-function writeData(data: ProdutosData): void {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf-8')
-}
-
-export async function GET() {
-  return NextResponse.json(readData())
-}
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 export async function POST(request: Request) {
   if (!(await isAdminAuthenticated())) {
     return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
   }
 
-  // Agora suporta tanto string única (legado) quanto array de strings (nova arquitetura)
-  const body = await request.json() as { categoriaSlugs?: string[]; categoriaSlug?: string; produto: Produto }
-  const data = readData()
+  try {
+    const body = await request.json()
+    const { produto, categoriaSlugs } = body
 
-  const slugsTarget = body.categoriaSlugs || (body.categoriaSlug ? [body.categoriaSlug] : [])
-  if (slugsTarget.length === 0) {
-    return NextResponse.json({ error: 'Nenhuma categoria informada' }, { status: 400 })
-  }
-
-  let inserido = false
-  for (const cat of data.categorias) {
-    if (slugsTarget.includes(cat.slug)) {
-      // Evita duplicidade no mesmo array
-      if (!cat.produtos.some(p => p.id === body.produto.id)) {
-        cat.produtos.push(body.produto)
-        inserido = true
-      }
+    if (!categoriaSlugs || categoriaSlugs.length === 0) {
+      return NextResponse.json({ error: 'Nenhuma categoria informada' }, { status: 400 })
     }
-  }
 
-  if (!inserido) {
-    return NextResponse.json({ error: 'Categorias não encontradas' }, { status: 404 })
-  }
+    const produtoParaInserir = {
+      nome: produto.nome,
+      categoriaSlugs: categoriaSlugs,
+      lojaOrigem: produto.loja,
+      preco: produto.preco,
+      precoOriginal: produto.preco_original || null,
+      desconto_pct: produto.desconto_pct || null,
+      imagem: produto.imagem,
+      linkAfiliado: produto.link_afiliado,
+      destaque: produto.destaque,
+      novo: produto.novo,
+      tags: produto.tags || [],
+      createdAt: produto.createdAt
+    }
 
-  writeData(data)
-  return NextResponse.json({ ok: true }, { status: 201 })
+    const { data, error } = await supabase.from('produtos').insert([produtoParaInserir]).select()
+
+    if (error) throw error
+    return NextResponse.json({ ok: true, data }, { status: 201 })
+
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+}
+
+export async function GET() {
+  const { data, error } = await supabase.from('produtos').select('*').order('createdAt', { ascending: false })
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json(data || [])
 }

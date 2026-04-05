@@ -186,7 +186,13 @@ export default function ProductsTable({ produtos, categorias }: ProductsTablePro
                 const isSelected = selectedIds.includes(p.id)
                 
                 return (
-                  <TableRow key={p.id} className={`border-border transition-colors group ${isSelected ? 'bg-primary/5' : 'hover:bg-muted/50'}`}>
+                  <TableRow 
+                  key={p.id} 
+                  className={`border-border transition-all duration-200 group 
+                    ${isSelected ? 'bg-primary/10' : 'hover:bg-muted/20'} 
+                    ${antigo ? 'opacity-50 bg-red-900/10 hover:opacity-100 border-l-2 border-l-red-500' : ''}
+                  `}
+                >
                     <TableCell className="text-center">
                       <input 
                         type="checkbox" 

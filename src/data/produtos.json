@@ -24,42 +24,7 @@
       "emoji": "💻",
       "cor": "#3B82F6",
       "descricao": "Gadgets e eletrônicos que valem",
-      "produtos": [
-        {
-          "id": "prod-1775306467226",
-          "nome": "Unidade de estado sólido Kingston M.2 NVMe PCIe 4.0 NV3 de 1 TB, azul escuro",
-          "preco": 917.05,
-          "preco_original": 1039,
-          "desconto_pct": 12,
-          "imagem": "https://http2.mlstatic.com/D_NQ_NP_2X_795091-MLA99417498242_112025-F.webp",
-          "link_afiliado": "https://meli.la/2mtuDWc",
-          "loja": "mercadolivre",
-          "tags": [
-            "Ssd",
-            "Estação pessoal"
-          ],
-          "destaque": false,
-          "novo": false,
-          "createdAt": "2026-04-04T12:00:00.000Z"
-        },
-        {
-          "id": "prod-1775306813662",
-          "nome": "Celular Samsung Galaxy A07 256gb 8gb Câmera 50mp Verde",
-          "preco": 781.15,
-          "preco_original": 1799,
-          "desconto_pct": 57,
-          "imagem": "https://http2.mlstatic.com/D_NQ_NP_2X_778917-MLA91526601104_092025-F.webp",
-          "link_afiliado": "https://meli.la/195JMpN",
-          "loja": "amazon",
-          "tags": [
-            "Celular",
-            "Samsung"
-          ],
-          "destaque": true,
-          "novo": true,
-          "createdAt": "2026-04-04T12:00:00.000Z"
-        }
-      ],
+      "produtos": [],
       "iconeUrl": "https://i.imgur.com/pbGDE7q.png"
     },
     {
@@ -86,109 +51,7 @@
       "emoji": "🏠",
       "cor": "#EAB308",
       "descricao": "Deixa sua casa mais bonita",
-      "produtos": [
-        {
-          "id": "prod-1775304744132",
-          "nome": "3 Corações TRES Cafeteira Espresso e Multibebida Passione Vermelha - 220V",
-          "preco": 397,
-          "preco_original": 499,
-          "desconto_pct": 20,
-          "imagem": "https://m.media-amazon.com/images/I/51FjgWjWfRS._AC_SL1181_.jpg",
-          "link_afiliado": "https://amzn.to/4e2mflu",
-          "loja": "amazon",
-          "tags": [
-            "Cafeteira",
-            "Café"
-          ],
-          "destaque": true,
-          "novo": true,
-          "createdAt": "2026-04-04T12:00:00.000Z"
-        },
-        {
-          "id": "prod-1775305033846",
-          "nome": "WAP Ventilador de Torre AIR SILENCE com 4 Ní­veis de Velocidade, Time de até 15 Horas e Desligamento Automático 127V",
-          "preco": 325.9,
-          "preco_original": 599.9,
-          "desconto_pct": 46,
-          "imagem": "https://m.media-amazon.com/images/I/61+rCTOwewL._AC_SL1500_.jpg",
-          "link_afiliado": "https://amzn.to/41iC0gG",
-          "loja": "amazon",
-          "tags": [
-            "127 volts",
-            "220 volts",
-            "Minimalista"
-          ],
-          "destaque": true,
-          "novo": false,
-          "createdAt": "2026-04-04T12:00:00.000Z"
-        },
-        {
-          "id": "prod-1775305318990",
-          "nome": "Electrolux Kit 12 Potes Herméticos de Plástico Retangulares, Multiuso, Vedação Silicone, BPA Free, Porta Mantimentos",
-          "preco": 89,
-          "preco_original": 129.9,
-          "desconto_pct": 31,
-          "imagem": "https://m.media-amazon.com/images/I/51uccv-jBiL._AC_SL1000_.jpg",
-          "link_afiliado": "https://amzn.to/4dZGlwH",
-          "loja": "amazon",
-          "tags": [
-            "Hermético",
-            "Kit",
-            "Mantimento"
-          ],
-          "destaque": true,
-          "novo": true,
-          "createdAt": "2026-04-04T12:00:00.000Z"
-        },
-        {
-          "id": "prod-1775305206666",
-          "nome": "Sanduicheira Elétrica Cadence Click - 127V",
-          "preco": 93.8,
-          "preco_original": 159.9,
-          "desconto_pct": 41,
-          "imagem": "https://m.media-amazon.com/images/I/51UxR8FHe-L._AC_SL1000_.jpg",
-          "link_afiliado": "https://amzn.to/4tb1fhr",
-          "loja": "amazon",
-          "tags": [
-            "Cozinha"
-          ],
-          "destaque": true,
-          "novo": true,
-          "createdAt": "2026-04-04T12:00:00.000Z"
-        },
-        {
-          "id": "prod-1775306087340",
-          "nome": "Escrivaninha Trevalla Kuadra Me150-E10 Industrial 150cm Preto Onix",
-          "preco": 328.11,
-          "imagem": "https://m.media-amazon.com/images/I/41Q7H0N6QhL._AC_SL1000_.jpg",
-          "link_afiliado": "https://amzn.to/4sS8f2f",
-          "loja": "amazon",
-          "tags": [
-            "Escrivania",
-            "Estação pessoal"
-          ],
-          "destaque": false,
-          "novo": true,
-          "createdAt": "2026-04-04T12:00:00.000Z"
-        },
-        {
-          "id": "prod-1775304863447",
-          "nome": "Bicicleta ergométrica com monitor LCDD Z-006",
-          "preco": 769.95,
-          "preco_original": 867.5,
-          "desconto_pct": 11,
-          "imagem": "https://m.media-amazon.com/images/I/61ZF+i7bgnL._AC_SL1200_.jpg",
-          "link_afiliado": "https://amzn.to/4bO7WzC",
-          "loja": "amazon",
-          "tags": [
-            "Cárdio",
-            "Fitness"
-          ],
-          "destaque": false,
-          "novo": false,
-          "createdAt": "2026-04-04T12:00:00.000Z"
-        }
-      ],
+      "produtos": [],
       "iconeUrl": "https://i.imgur.com/3fRGDPB.png"
     },
     {
@@ -197,26 +60,7 @@
       "emoji": "💄",
       "cor": "#EC4899",
       "descricao": "Skincare, perfumes e cuidados pessoais",
-      "produtos": [
-        {
-          "id": "prod-1775305417168",
-          "nome": "L'Oréal Paris Elseve Óleo Extraordinário Finalizador Capilar, Nutrição Profunda com 6 Óleos Preciosos, Anti-Frizz, Proteção Térmica até 230°C, Brilho Intenso para Todos os Tipos de Cabelo, 100ml",
-          "preco": 31.3,
-          "preco_original": 49.9,
-          "desconto_pct": 37,
-          "imagem": "https://m.media-amazon.com/images/I/61bsBAPQB7L._AC_SL1500_.jpg",
-          "link_afiliado": "https://amzn.to/41IToeG",
-          "loja": "amazon",
-          "tags": [
-            "Controle de frizz",
-            "Todo tipo de cabelo",
-            "Capilar"
-          ],
-          "destaque": true,
-          "novo": true,
-          "createdAt": "2026-04-04T12:00:00.000Z"
-        }
-      ],
+      "produtos": [],
       "iconeUrl": "https://i.imgur.com/yhmsQeZ.png"
     },
     {
@@ -225,59 +69,7 @@
       "emoji": "⚡",
       "cor": "#06B6D4",
       "descricao": "Geladeiras, fogões e utilidades pro lar",
-      "produtos": [
-        {
-          "id": "prod-1775304744132",
-          "nome": "3 Corações TRES Cafeteira Espresso e Multibebida Passione Vermelha - 220V",
-          "preco": 397,
-          "preco_original": 499,
-          "desconto_pct": 20,
-          "imagem": "https://m.media-amazon.com/images/I/51FjgWjWfRS._AC_SL1181_.jpg",
-          "link_afiliado": "https://amzn.to/4e2mflu",
-          "loja": "amazon",
-          "tags": [
-            "Cafeteira",
-            "Café"
-          ],
-          "destaque": true,
-          "novo": true,
-          "createdAt": "2026-04-04T12:00:00.000Z"
-        },
-        {
-          "id": "prod-1775305033846",
-          "nome": "WAP Ventilador de Torre AIR SILENCE com 4 Ní­veis de Velocidade, Time de até 15 Horas e Desligamento Automático 127V",
-          "preco": 325.9,
-          "preco_original": 599.9,
-          "desconto_pct": 46,
-          "imagem": "https://m.media-amazon.com/images/I/61+rCTOwewL._AC_SL1500_.jpg",
-          "link_afiliado": "https://amzn.to/41iC0gG",
-          "loja": "amazon",
-          "tags": [
-            "127 volts",
-            "220 volts",
-            "Minimalista"
-          ],
-          "destaque": true,
-          "novo": false,
-          "createdAt": "2026-04-04T12:00:00.000Z"
-        },
-        {
-          "id": "prod-1775305206666",
-          "nome": "Sanduicheira Elétrica Cadence Click - 127V",
-          "preco": 93.8,
-          "preco_original": 159.9,
-          "desconto_pct": 41,
-          "imagem": "https://m.media-amazon.com/images/I/51UxR8FHe-L._AC_SL1000_.jpg",
-          "link_afiliado": "https://amzn.to/4tb1fhr",
-          "loja": "amazon",
-          "tags": [
-            "Cozinha"
-          ],
-          "destaque": true,
-          "novo": true,
-          "createdAt": "2026-04-04T12:00:00.000Z"
-        }
-      ],
+      "produtos": [],
       "iconeUrl": "https://i.imgur.com/gYPgRb0.png"
     },
     {
@@ -304,24 +96,7 @@
       "emoji": "🛒",
       "cor": "#14B8A6",
       "descricao": "Bebidas, alimentos e itens essenciais",
-      "produtos": [
-        {
-          "id": "prod-1775305606248",
-          "nome": "Heinz Ketchup Tradicional 1,033KG",
-          "preco": 17.4,
-          "preco_original": 23.19,
-          "desconto_pct": 25,
-          "imagem": "https://m.media-amazon.com/images/I/51653ltvYsL._AC_SL1200_.jpg",
-          "link_afiliado": "https://amzn.to/41iCOSK",
-          "loja": "amazon",
-          "tags": [
-            "Sem glúten"
-          ],
-          "destaque": true,
-          "novo": true,
-          "createdAt": "2026-04-04T12:00:00.000Z"
-        }
-      ],
+      "produtos": [],
       "iconeUrl": "https://i.imgur.com/71X7MS0.png"
     }
   ]
