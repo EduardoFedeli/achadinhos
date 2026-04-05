@@ -45,9 +45,14 @@ export async function POST(request: Request) {
       createdAt: produto.createdAt
     }
 
+    // ... código anterior permanece ...
     const { data, error } = await supabase.from('produtos').insert([produtoParaInserir]).select()
 
-    if (error) throw error
+    // Se o Supabase reclamar, devolvemos o objeto de erro INTEIRO para o frontend
+    if (error) {
+      return NextResponse.json({ error: error }, { status: 400 })
+    }
+
     return NextResponse.json({ ok: true, data }, { status: 201 })
 
   } catch (error: any) {

@@ -161,7 +161,9 @@ export default function ProductForm({ categorias = [], produto, onSave, onCancel
     if (res.ok) {
       onSave()
     } else {
-      alert('Erro ao salvar produto.')
+      // Isso vai pegar o erro exato que o backend mandou e jogar na sua tela
+      const erroData = await res.json()
+      alert(`ERRO DO SUPABASE: ${JSON.stringify(erroData)}`)
       setLoading(false)
     }
   }
