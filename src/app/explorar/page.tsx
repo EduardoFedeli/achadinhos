@@ -3,6 +3,9 @@ import { getCategorias } from "@/lib/produtos";
 import Header from "@/components/Header";
 import CategoriaContent from "@/app/[categoria]/CategoriaContent";
 import type { Categoria } from "@/types";
+import { createClient } from '@supabase/supabase-js'
+
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: "Explorar Ofertas — T-Hex Indica",
@@ -12,11 +15,12 @@ export const metadata: Metadata = {
 
 export default async function ExplorarPage() {
   const categoriasReais = await getCategorias();
-
-  // 1. Extraímos todos os produtos e REMOVEMOS DUPLICATAS
-  const todosProdutosBrutos = categoriasReais.flatMap((c) =>
-    c.produtos.map((p) => ({ ...p, categoriaSlug: c.slug })),
-  );
+   
+   // Conecta no banco e pega todos os produtos
+   const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
+   const { data: produtosRaw } = await supabase.from('produtos').select('*').order('createdAt', { ascending: false });
+   
+   const todosProdutosBrutos = produtosRaw || [];
 
   const unicos = new Map();
   todosProdutosBrutos.forEach((p) => {
