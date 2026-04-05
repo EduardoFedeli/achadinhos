@@ -6,6 +6,7 @@ interface ProductCardProps {
   produto: Produto
   categoria: Categoria
   brandColorOnly?: boolean // Prop para forçar a cor verde na Home
+  forceColor?: string      // Prop para forçar qualquer cor (ex: Laranja)
 }
 
 const LOJA_LABEL: Record<string, string> = {
@@ -14,15 +15,16 @@ const LOJA_LABEL: Record<string, string> = {
   casasbahia: 'Casas Bahia', centauro: 'Centauro', aliexpress: 'AliExpress',
 }
 
-export default function ProductCard({ produto, categoria, brandColorOnly }: ProductCardProps) {
+export default function ProductCard({ produto, categoria, brandColorOnly, forceColor }: ProductCardProps) {
   // A LÓGICA MESTRA DE CORES: 
-  // Se for brandColorOnly (Home), tudo é verde (#22C55E).
-  // Se não (Página de Categoria ou Explorar), usa a cor da categoria (ou verde como fallback).
-  const baseColor = brandColorOnly ? '#22C55E' : (categoria.cor || '#22C55E')
+  // 1. Se tiver forceColor, usa ele.
+  // 2. Se for brandColorOnly, usa o verde T-Hex (#22C55E).
+  // 3. Se não, usa a cor da categoria.
+  const baseColor = forceColor ? forceColor : (brandColorOnly ? '#22C55E' : (categoria.cor || '#22C55E'))
 
   return (
     <a
-      href={produto.link_afiliado}
+      href={produto.linkAfiliado || produto.link_afiliado}
       target="_blank"
       rel="noopener noreferrer sponsored"
       className="group flex flex-col overflow-hidden rounded-[24px] bg-[#1A1A24] border border-[#2A2A35] transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.5)] relative"
@@ -89,9 +91,9 @@ export default function ProductCard({ produto, categoria, brandColorOnly }: Prod
         </p>
         
         <div className="mb-5">
-          {produto.preco_original && (
+          {(produto.precoOriginal || produto.preco_original) && (
             <p className="text-[11px] text-[#A1A1AA] line-through opacity-60 mb-0.5 font-medium">
-              {formatarPreco(produto.preco_original)}
+              {formatarPreco(produto.precoOriginal || produto.preco_original || 0)}
             </p>
           )}
           {/* PREÇO (Usa a cor base dinamicamente via style) */}

@@ -51,6 +51,7 @@ export default function ProductForm({ categorias = [], produto, onSave, onCancel
       : new Date().toISOString().split('T')[0]
   )
   const [loading, setLoading] = useState(false)
+  const [isExtracting, setIsExtracting] = useState(false)
 
   function handlePrecoOriginalChange(v: string) {
     setPrecoOriginal(v)
@@ -103,6 +104,38 @@ export default function ProductForm({ categorias = [], produto, onSave, onCancel
         : [...prev, slug]
     )
   }
+
+  async function handleExtrairDados() {
+    if (!linkAfiliado || (!linkAfiliado.includes('amazon') && !linkAfiliado.includes('amzn.to'))) {
+      alert('Cole um link válido da Amazon primeiro!')
+      return
+    }
+
+    setIsExtracting(true)
+    try {
+      const res = await fetch('/api/scraper', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: linkAfiliado })
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        if (data.nome) setNome(data.nome)
+        if (data.preco) setPreco(data.preco.toString())
+        if (data.imagem) setImagem(data.imagem)
+        setLoja('amazon') // Já seleciona a loja certa
+      } else {
+        alert(`Erro do T-Hex: ${data.error}`)
+      }
+    } catch (error) {
+      alert('Falha na comunicação com o robô caçador.')
+    } finally {
+      setIsExtracting(false)
+    }
+  }
+
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -307,11 +340,21 @@ export default function ProductForm({ categorias = [], produto, onSave, onCancel
           </div>
 
           <div className="space-y-1 flex-1">
-            <Label className="text-xs text-muted-foreground">Link de Afiliado <span className="text-primary">*</span></Label>
-            <Input 
-              value={linkAfiliado} onChange={e => setLinkAfiliado(e.target.value)} required
-              placeholder="https://amzn.to/..." className="bg-[#0F0F13] border-[#2A2A35] h-9 text-sm rounded-lg"
-            />
+            <Label className="text-xs text-muted-foreground">Link do Produto (Amazon) <span className="text-primary">*</span></Label>
+            <div className="flex gap-2">
+              <Input 
+                value={linkAfiliado} onChange={e => setLinkAfiliado(e.target.value)} required
+                placeholder="https://amzn.to/..." className="bg-[#0F0F13] border-[#2A2A35] flex-1 h-9 text-sm rounded-lg"
+              />
+              <Button 
+                type="button" 
+                onClick={handleExtrairDados} 
+                disabled={isExtracting || !linkAfiliado}
+                className="h-9 px-3 bg-[#22C55E] text-[#0F0F13] font-black text-xs hover:bg-[#22C55E]/90 shrink-0 transition-all shadow-[0_0_15px_rgba(34,197,94,0.3)]"
+              >
+                {isExtracting ? 'Farejando...' : '🦖 Extrair Dados'}
+              </Button>
+            </div>
           </div>
         </div>
 

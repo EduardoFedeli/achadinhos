@@ -72,9 +72,9 @@ export default function FilterPanel({ filtros, onFiltrosChange, tagsDaCategoria,
         <p className="text-sm font-black uppercase tracking-widest text-white">Filtros</p>
       </div>
 
-      <div className="flex flex-col gap-8 p-6 md:pt-6 pt-0">
+      <div className="flex flex-col gap-8 p-6 md:pt-2 pt-0">
         <div>
-          <p className="mb-4 text-[11px] font-black uppercase tracking-[0.15em] text-[#A1A1AA]">Faixa de preço</p>
+          <p className="mb-1 text-[11px] font-black uppercase tracking-[0.15em] text-[#A1A1AA]">Faixa de preço</p>
           <PriceRangeSlider
             min={0}
             max={precoMaxTotal}

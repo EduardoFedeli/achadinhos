@@ -19,23 +19,19 @@ export default function PriceRangeSlider({
   cor = '#F97316', // Fallback para o laranja padrão
 }: PriceRangeSliderProps) {
   return (
-    <div className="space-y-4">
+    // Mudamos para flex-col e gap-3 para ter um controle exato do espaço
+    <div className="flex flex-col gap-3">
       <Slider
         min={min}
         max={max}
         step={10}
         value={value}
         onValueChange={(v) => onChange(v as [number, number])}
-        /* Injetamos a cor via CSS Variable. 
-           Isso permite que o componente interno do shadcn acesse a cor correta.
-        */
         style={{ 
           '--cat-color': cor,
         } as React.CSSProperties}
-        /* Aplicamos classes de utilidade para forçar a cor no Range e no Thumb 
-           sem precisar editar o arquivo base do shadcn.
-        */
-        className="my-4 [&_[data-slot=slider-range]]:bg-[var(--cat-color)] [&_[data-slot=slider-thumb]]:border-[var(--cat-color)] [&_[data-slot=slider-thumb]]:ring-[var(--cat-color)]"
+        // Removemos o 'my-4' que estava empurrando a barra para baixo!
+        className="mt-3 mb-2 [&_[data-slot=slider-range]]:bg-[var(--cat-color)] [&_[data-slot=slider-thumb]]:border-[var(--cat-color)] [&_[data-slot=slider-thumb]]:ring-[var(--cat-color)]"
       />
       
       <div className="flex justify-between items-center bg-[#0F0F13] border border-[#2A2A35] rounded-lg px-3 py-2">

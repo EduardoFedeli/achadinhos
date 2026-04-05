@@ -3,14 +3,14 @@ import Image from 'next/image'
 
 export default function HeroBanner() {
   return (
-    <section className="relative w-full overflow-hidden rounded-[32px] bg-[#1A1A24] border border-[#2A2A35] px-6 py-10 md:px-12 md:py-16 shadow-2xl">
+    <section className="relative w-full overflow-hidden bg-[#14141C] px-4 py-8 md:px-12 md:py-10 shadow-2xl">
       
       {/* Efeitos Visuais T-Hex (Glow Verde e Ciano) */}
       <div className="absolute -left-20 -top-20 h-72 w-72 rounded-full bg-[#22C55E] opacity-10 blur-[80px] pointer-events-none" />
       <div className="absolute right-0 bottom-0 h-96 w-96 rounded-full bg-[#22D3EE] opacity-[0.07] blur-[100px] pointer-events-none" />
 
       {/* Container do Conteúdo */}
-      <div className="relative z-10 flex flex-col-reverse md:flex-row items-center justify-between gap-10">
+      <div className="relative z-10 flex flex-col-reverse md:flex-row items-center justify-center gap-12 md:gap-24 lg:gap-32 max-w-5xl mx-auto">
         
         {/* Textos e CTA */}
         <div className="max-w-xl text-center md:text-left flex flex-col items-center md:items-start">
@@ -36,7 +36,7 @@ export default function HeroBanner() {
         </div>
 
         {/* Mascote T-Hex */}
-        <div className="relative w-48 h-48 md:w-72 md:h-72 lg:w-96 lg:h-96 drop-shadow-2xl animate-in fade-in zoom-in duration-1000">
+        <div className="relative w-40 h-40 md:w-56 md:h-56 lg:w-72 lg:h-72 drop-shadow-2xl animate-in fade-in zoom-in duration-1000">
           <Image 
             src="/assets/mascot/icone4.png" 
             alt="T-Hex Mascote" 
