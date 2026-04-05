@@ -12,18 +12,21 @@ export interface Produto {
   id: string
   nome: string
   preco: number
-  preco_original?: number
+  preco_original?: number // Para o código antigo
+  precoOriginal?: number  // Para o Supabase
   desconto_pct?: number
   imagem: string
-  link_afiliado: string
+  link_afiliado: string   // Para o código antigo
+  linkAfiliado?: string    // Para o Supabase
   loja: string
   tags?: string[]
-  // NOVO: Record onde a chave é o nome do atributo ("Tamanho") e o valor é a opção ("M")
   atributos?: Record<string, string> 
   destaque?: boolean
   novo?: boolean
   createdAt?: string
   marketplace?: string
+  categoriaSlug?: string
+  categoriaSlugs?: string[] // Array de categorias do Supabase
 }
 
 export interface Categoria {

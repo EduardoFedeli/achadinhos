@@ -38,7 +38,6 @@ export default function AdminLoginPage() {
           <span className="font-light">T-Hex</span> Indica
         </h1>
         <p className="mb-6 text-sm text-muted-foreground">Painel administrativo</p>
-
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
             <Label htmlFor="password" className="text-white mb-1 block">Senha</Label>
@@ -53,11 +52,7 @@ export default function AdminLoginPage() {
               autoFocus
             />
           </div>
-
-          {error && (
-            <p className="text-sm text-red-400">{error}</p>
-          )}
-
+          {error && <p className="text-sm text-red-400">{error}</p>}
           <Button type="submit" disabled={loading} className="bg-brand text-white hover:bg-brand/90">
             {loading ? 'Entrando...' : 'Entrar'}
           </Button>
