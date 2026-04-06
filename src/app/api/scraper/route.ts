@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server'
 import * as cheerio from 'cheerio'
+import { withAdmin } from '@/lib/auth'
 
-export async function POST(req: Request) {
+export const POST = withAdmin(async function(req: Request) {
   try {
     const { url } = await req.json()
 
@@ -89,4 +90,4 @@ export async function POST(req: Request) {
   } catch (error: any) {
     return NextResponse.json({ error: 'Erro ao caçar os dados. Verifique se o link está correto.' }, { status: 500 })
   }
-}
+});

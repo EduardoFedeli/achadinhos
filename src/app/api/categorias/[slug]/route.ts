@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { isAdminAuthenticated } from '@/lib/adminAuth'
+import { withAdmin } from '@/lib/auth'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 
-export async function PUT(request: Request, { params }: { params: Promise<{ slug: string }> }) {
-  if (!(await isAdminAuthenticated())) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+export const PUT = withAdmin(async function(request: Request, { params }: { params: Promise<{ slug: string }> }) {
   try {
     const { slug } = await params
     
@@ -23,10 +22,9 @@ export async function PUT(request: Request, { params }: { params: Promise<{ slug
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
-}
+});
 
-export async function DELETE(request: Request, { params }: { params: Promise<{ slug: string }> }) {
-  if (!(await isAdminAuthenticated())) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+export const DELETE = withAdmin(async function(request: Request, { params }: { params: Promise<{ slug: string }> }) {
   try {
     const { slug } = await params
     const { error } = await supabase.from('categorias').delete().eq('slug', slug)
@@ -35,4 +33,4 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ s
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
-}
+});

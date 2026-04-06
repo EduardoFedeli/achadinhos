@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { withAdmin } from '@/lib/auth'
 
-export async function POST(req: Request) {
+export const POST = withAdmin(async function(req: Request) {
   try {
     const body = await req.json()
     const { ids, action } = body
@@ -36,4 +37,4 @@ export async function POST(req: Request) {
     console.error('Erro na operação em lote (bulk):', error)
     return NextResponse.json({ error: error.message || 'Erro interno do servidor.' }, { status: 500 })
   }
-}
+});

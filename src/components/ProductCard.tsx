@@ -4,11 +4,13 @@ import Image from 'next/image'
 import type { Produto, Categoria } from '@/types'
 import { formatarPreco } from '@/lib/produtos'
 
+// 1. Adicionamos a tipagem do priority aqui (?) significa que é opcional
 interface ProductCardProps {
   produto: Produto
   categoria: Categoria
   brandColorOnly?: boolean
   forceColor?: string
+  priority?: boolean 
 }
 
 const LOJA_LABEL: Record<string, string> = {
@@ -17,29 +19,21 @@ const LOJA_LABEL: Record<string, string> = {
   casasbahia: 'Casas Bahia', centauro: 'Centauro', aliexpress: 'AliExpress',
 }
 
-export default function ProductCard({ produto, categoria, brandColorOnly, forceColor }: ProductCardProps) {
+// 2. Recebemos a prop priority aqui
+export default function ProductCard({ produto, categoria, brandColorOnly, forceColor, priority }: ProductCardProps) {
   const baseColor = forceColor ? forceColor : (brandColorOnly ? '#22C55E' : (categoria?.cor || '#22C55E'))
   const precoOriginalReal = (produto as any).precoOriginal || (produto as any).preco_original;
   const linkDestino = produto.link_afiliado || (produto as any).linkAfiliado || (produto as any).link || '#';
 
-  // 🚀 Função Fire and Forget para rastrear o clique
   const handleTrackClick = () => {
-    // Dispara a requisição em background. 
-    // Não usamos await nem e.preventDefault() para não atrasar a abertura da nova guia.
     fetch('/api/track-click', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         produtoId: produto.id,
-        // Garante que o slug da categoria seja enviado corretamente
         categoriaSlug: categoria?.slug || (produto as any).categoriaSlugs?.[0] || 'sem-categoria'
       }),
-    }).catch(error => {
-      // Falha silenciosa no console, o usuário não é impactado
-      console.error('Falha ao rastrear clique:', error);
-    });
+    }).catch(error => console.error('Falha ao rastrear clique:', error));
   };
 
   return (
@@ -59,6 +53,7 @@ export default function ProductCard({ produto, categoria, brandColorOnly, forceC
             src={produto.imagem}
             alt={produto.nome}
             fill
+            priority={priority} // 3. Repassamos a prop dinamicamente para o Next Image
             className="object-contain p-4 transition-transform duration-500 group-hover:scale-105"
             sizes="(max-width: 1024px) 50vw, 20vw"
           />
