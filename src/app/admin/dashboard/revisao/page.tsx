@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { ExternalLink, Save, CheckCircle2, Bot } from 'lucide-react'
+import { ExternalLink, Save, CheckCircle2, Bot, Search, PackageSearch, Flame } from 'lucide-react'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -13,7 +13,7 @@ interface ProdutoRevisao {
   nome: string
   linkAfiliado: string
   preco: number
-  preco_original: number | null
+  precoOriginal: number | null
   lojaOrigem: string
   novoPreco?: string 
   novoPrecoOriginal?: string
@@ -21,53 +21,56 @@ interface ProdutoRevisao {
 }
 
 export default function RevisaoManualPage() {
+  const [marketplaces, setMarketplaces] = useState<any[]>([])
+  const [filtroLoja, setFiltroLoja] = useState('')
+  const [filtroCurva, setFiltroCurva] = useState<'todas' | 'curva_a'>('todas')
   const [produtos, setProdutos] = useState<ProdutoRevisao[]>([])
-  const [loading, setLoading] = useState(true)
+  const [buscando, setBuscando] = useState(false)
+  const [buscaRealizada, setBuscaRealizada] = useState(false)
 
   useEffect(() => {
-    carregarFila()
+    supabase
+      .from('marketplaces')
+      .select('slug, nome')
+      .eq('ativo', true)
+      .eq('scraper_ativo', false)
+      .then(({ data }) => { if (data) setMarketplaces(data) })
   }, [])
 
-  async function carregarFila() {
-    // 1. Busca quais marketplaces estão com o scraper DESATIVADO
-    const { data: mkts, error: errMkt } = await supabase
-      .from('marketplaces')
-      .select('slug')
-      .eq('scraper_ativo', false)
+  async function buscarProdutos() {
+    if (!filtroLoja) return alert('Selecione uma loja para revisar.')
+    
+    setBuscando(true)
+    setBuscaRealizada(false)
 
-    if (errMkt) {
-      console.error('[FILA ERROR] Erro ao buscar marketplaces:', errMkt)
-      setLoading(false)
-      return
-    }
-
-    if (!mkts || mkts.length === 0) {
-      setProdutos([])
-      setLoading(false)
-      return
-    }
-
-    const slugsBloqueados = mkts.map(m => m.slug)
-
-    // 2. Busca os produtos incluindo o preco_original
-    const { data: prods, error: errProds } = await supabase
+    let query = supabase
       .from('produtos')
-      .select('id, nome, linkAfiliado, preco, preco_original, lojaOrigem')
-      .in('lojaOrigem', slugsBloqueados)
+      .select('id, nome, linkAfiliado, preco, precoOriginal, lojaOrigem')
+      .eq('lojaOrigem', filtroLoja)
 
-    if (errProds) {
-      console.error('[FILA ERROR] Erro ao buscar produtos:', errProds)
-      alert(`Erro no banco: ${errProds.message}`)
+    // FILTRO ESTRATÉGICO: Curva A pega apenas produtos que estão em Destaque na Home Page
+    if (filtroCurva === 'curva_a') {
+      query = query.eq('destaque', true)
     }
 
-    if (prods) {
+    // Ordena pelos mais velhos primeiro, para garantir giro do inventário
+    query = query.order('createdAt', { ascending: true })
+
+    const { data: prods, error } = await query
+
+    if (error) {
+      console.error('[RADAR MANUAL ERROR]', error)
+      alert(`Erro ao buscar: ${error.message}`)
+    } else if (prods) {
       setProdutos(prods.map(p => ({ 
         ...p, 
         novoPreco: p.preco ? p.preco.toString() : '',
-        novoPrecoOriginal: p.preco_original ? p.preco_original.toString() : ''
+        novoPrecoOriginal: p.precoOriginal ? p.precoOriginal.toString() : ''
       })))
     }
-    setLoading(false)
+    
+    setBuscando(false)
+    setBuscaRealizada(true)
   }
 
   function handlePriceChange(id: string, field: 'novoPreco' | 'novoPrecoOriginal', value: string) {
@@ -84,7 +87,6 @@ export default function RevisaoManualPage() {
     if (isNaN(precoNum)) return alert('O Preço Atual é inválido.')
     if (precoOrigNum && precoOrigNum <= precoNum) return alert('O Preço Original deve ser maior que o Preço Atual.')
 
-    // Cálculo automático da porcentagem de desconto
     let desconto_pct = null
     if (precoOrigNum && precoOrigNum > precoNum) {
       desconto_pct = Math.round((1 - precoNum / precoOrigNum) * 100)
@@ -92,56 +94,134 @@ export default function RevisaoManualPage() {
 
     setProdutos(prev => prev.map(p => p.id === id ? { ...p, salvando: true } : p))
 
-    const { error } = await supabase
-      .from('produtos')
-      .update({ 
-        preco: precoNum, 
-        preco_original: precoOrigNum,
-        desconto_pct: desconto_pct, // Salva o desconto para a vitrine renderizar as badges
-        updatedAt: new Date().toISOString() 
+    // CORREÇÃO: Chama a nossa nova API blindada no backend ao invés de atualizar no frontend
+    try {
+      const res = await fetch('/api/revisao', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          id, 
+          preco: precoNum, 
+          precoOriginal: precoOrigNum, 
+          desconto_pct 
+        })
       })
-      .eq('id', id)
 
-    if (!error) {
-      // Remove da lista instantaneamente após salvar para esvaziar a fila
-      setProdutos(prev => prev.filter(p => p.id !== id))
-    } else {
-      alert('Erro ao salvar no banco.')
+      if (res.ok) {
+        setProdutos(prev => prev.filter(p => p.id !== id))
+      } else {
+        const errorData = await res.json()
+        alert(`Erro ao salvar no banco: ${errorData.error}`)
+        setProdutos(prev => prev.map(p => p.id === id ? { ...p, salvando: false } : p))
+      }
+    } catch (error) {
+      alert('Falha de comunicação ao salvar.')
       setProdutos(prev => prev.map(p => p.id === id ? { ...p, salvando: false } : p))
     }
   }
 
-  if (loading) return <div className="p-8 text-white font-bold animate-pulse">Carregando fila de revisão...</div>
-
   return (
     <div className="space-y-6 max-w-[1400px] mx-auto pb-20">
-      <div className="bg-[#1A1A24] p-6 rounded-2xl border border-[#2A2A35] shadow-lg flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-black text-white tracking-tight flex items-center gap-3">
-            <Bot className="text-primary" size={28} /> Fila de Revisão Manual
-          </h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            Produtos de marketplaces blindados (`scraper_ativo = false`). Ideal para revisão via Agentes de IA.
-          </p>
+      
+      {/* HEADER & CONTROLES */}
+      <div className="bg-[#1A1A24] p-5 sm:p-6 rounded-2xl border border-[#2A2A35] shadow-lg">
+        <div className="flex items-center gap-3 mb-1">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+            <Bot size={20} className="text-primary" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-black text-white tracking-tight">Fila de Revisão Manual</h1>
+            <p className="text-muted-foreground text-xs mt-0.5">
+              Selecione um marketplace bloqueado e o nível de prioridade para atualizar o estoque.
+            </p>
+          </div>
         </div>
-        <div className="bg-[#0F0F13] px-4 py-2 rounded-xl border border-[#2A2A35] text-center">
-          <span className="block text-2xl font-black text-primary">{produtos.length}</span>
-          <span className="text-[10px] uppercase text-gray-500 font-bold tracking-widest">Pendentes</span>
+
+        <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center bg-[#0F0F13] p-3 rounded-xl border border-[#2A2A35] mt-4">
+          
+          {/* Filtro de Loja */}
+          <select
+            aria-label="Filtro de loja manual"
+            value={filtroLoja}
+            onChange={e => setFiltroLoja(e.target.value)}
+            className="h-11 rounded-lg border border-[#2A2A35] bg-[#1A1A24] px-4 text-sm text-white font-bold focus:outline-none focus:ring-1 focus:ring-primary uppercase w-full md:w-64"
+            disabled={buscando}
+          >
+            <option value="">Selecione a Loja...</option>
+            {marketplaces.map(mk => (
+              <option key={mk.slug} value={mk.slug}>{mk.nome.toUpperCase()}</option>
+            ))}
+          </select>
+
+          {/* Filtro de Curva (Prioridade) */}
+          <select
+            aria-label="Filtro de Prioridade (Curva)"
+            value={filtroCurva}
+            onChange={e => setFiltroCurva(e.target.value as 'todas' | 'curva_a')}
+            className={`h-11 rounded-lg border px-4 text-sm font-bold focus:outline-none focus:ring-1 focus:ring-primary w-full md:w-56 transition-colors ${
+              filtroCurva === 'curva_a' 
+                ? 'bg-[#F97316]/10 border-[#F97316]/50 text-[#F97316]' 
+                : 'bg-[#1A1A24] border-[#2A2A35] text-white'
+            }`}
+            disabled={buscando}
+          >
+            <option value="todas">Todas as Curvas (Geral)</option>
+            <option value="curva_a">🔥 Curva A (Só Destaques)</option>
+          </select>
+
+          <Button
+            onClick={buscarProdutos}
+            disabled={buscando || !filtroLoja}
+            className="h-11 bg-primary text-black font-black text-sm hover:bg-primary/80 flex-1 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(34,197,94,0.2)]"
+          >
+            <Search size={16} className={buscando ? 'animate-pulse' : ''} />
+            {buscando ? 'Buscando...' : 'Buscar Fila'}
+          </Button>
         </div>
       </div>
 
-      {produtos.length === 0 ? (
+      {/* EMPTY STATES */}
+      {!buscaRealizada && !buscando && (
+        <div className="flex flex-col items-center justify-center py-20 text-center gap-3">
+          <div className="w-16 h-16 rounded-2xl bg-[#1A1A24] border border-[#2A2A35] flex items-center justify-center">
+            <PackageSearch size={28} className="text-gray-600" />
+          </div>
+          <p className="text-gray-500 text-sm font-bold">Nenhuma fila carregada.</p>
+          <p className="text-gray-600 text-xs">Escolha um marketplace e a prioridade para começar a revisão.</p>
+        </div>
+      )}
+
+      {buscaRealizada && produtos.length === 0 && (
         <div className="flex flex-col items-center justify-center py-20 text-center gap-3">
           <CheckCircle2 size={48} className="text-[#22C55E]" />
           <p className="text-white font-black text-xl">Fila Limpa!</p>
-          <p className="text-gray-500 text-sm">Todos os produtos manuais estão atualizados.</p>
+          <p className="text-gray-500 text-sm">Não há produtos pendentes para esta seleção.</p>
         </div>
-      ) : (
-        <div className="bg-[#1A1A24] border border-[#2A2A35] rounded-xl overflow-x-auto">
+      )}
+
+      {/* TABELA DE OPERAÇÃO MANUAL */}
+      {produtos.length > 0 && (
+        <div className="bg-[#1A1A24] border border-[#2A2A35] rounded-xl overflow-x-auto shadow-lg">
+          <div className="p-4 border-b border-[#2A2A35] bg-[#0F0F13] flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <h2 className="text-sm font-black text-white uppercase tracking-widest">
+                Lote: <span className="text-primary">{filtroLoja}</span>
+              </h2>
+              {filtroCurva === 'curva_a' && (
+                <span className="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest bg-[#F97316]/20 text-[#F97316] px-2 py-0.5 rounded border border-[#F97316]/30">
+                  <Flame size={12} /> Alta Prioridade
+                </span>
+              )}
+            </div>
+            <span className="text-xs text-gray-500 font-bold bg-[#1A1A24] px-2 py-1 rounded border border-[#2A2A35]">
+              {produtos.length} pendentes
+            </span>
+          </div>
+          
           <table className="w-full text-sm text-left text-gray-300 min-w-[900px]">
             <thead className="text-[10px] uppercase bg-[#0F0F13] text-gray-500 font-black tracking-widest border-b border-[#2A2A35]">
               <tr>
-                <th className="px-5 py-4">Produto & Loja</th>
+                <th className="px-5 py-4">Produto</th>
                 <th className="px-5 py-4 text-right">Banco Atual</th>
                 <th className="px-5 py-4 text-center">Auditoria</th>
                 <th className="px-5 py-4 w-32">Novo Preço (R$)</th>
@@ -152,25 +232,19 @@ export default function RevisaoManualPage() {
             <tbody>
               {produtos.map(prod => (
                 <tr key={prod.id} className="border-b border-[#2A2A35] hover:bg-white/5 transition-colors">
-                  {/* NOME E LOJA */}
                   <td className="px-5 py-3">
-                    <p className="font-bold text-white text-xs line-clamp-1 mb-1 max-w-sm" title={prod.nome}>{prod.nome}</p>
-                    <span className="text-[9px] font-black uppercase bg-[#0F0F13] px-2 py-0.5 rounded border border-[#2A2A35]">
-                      {prod.lojaOrigem}
-                    </span>
+                    <p className="font-bold text-white text-xs line-clamp-2 max-w-md" title={prod.nome}>{prod.nome}</p>
                   </td>
                   
-                  {/* PREÇOS ATUAIS NO BANCO */}
                   <td className="px-5 py-3 text-right font-mono">
                     <div className="flex flex-col items-end">
                       <span className="text-[#22C55E] font-bold text-xs">R$ {prod.preco.toFixed(2)}</span>
-                      {prod.preco_original && (
-                        <span className="text-[#8E8E9F] text-[10px] line-through">R$ {prod.preco_original.toFixed(2)}</span>
+                      {prod.precoOriginal && (
+                        <span className="text-[#8E8E9F] text-[10px] line-through">R$ {prod.precoOriginal.toFixed(2)}</span>
                       )}
                     </div>
                   </td>
 
-                  {/* LINK EXTERNO */}
                   <td className="px-5 py-3 text-center">
                     <a 
                       href={prod.linkAfiliado} 
@@ -182,18 +256,16 @@ export default function RevisaoManualPage() {
                     </a>
                   </td>
 
-                  {/* INPUT NOVO PREÇO */}
                   <td className="px-5 py-3">
                     <Input 
                       type="number" 
                       step="0.01"
                       value={prod.novoPreco}
                       onChange={e => handlePriceChange(prod.id, 'novoPreco', e.target.value)}
-                      className="w-full h-8 bg-[#0F0F13] border-[#2A2A35] text-primary font-bold"
+                      className="w-full h-8 bg-[#0F0F13] border-[#2A2A35] text-primary font-bold focus:border-primary"
                     />
                   </td>
 
-                  {/* INPUT NOVO PREÇO ORIGINAL */}
                   <td className="px-5 py-3">
                     <Input 
                       type="number" 
@@ -205,7 +277,6 @@ export default function RevisaoManualPage() {
                     />
                   </td>
 
-                  {/* AÇÃO */}
                   <td className="px-5 py-3 text-right">
                     <Button 
                       onClick={() => salvarPreco(prod.id)}
