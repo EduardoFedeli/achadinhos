@@ -8,6 +8,8 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
+  // 👇 AQUI ESTÁ A CORREÇÃO: A URL base do seu projeto
+  metadataBase: new URL('https://achadinhos-rho.vercel.app'), 
   title: 'T-Hex Indica — As melhores ofertas escolhidas a dedo',
   description: 'A curadoria mais implacável da internet. Produtos selecionados com descontos reais.',
   openGraph: {

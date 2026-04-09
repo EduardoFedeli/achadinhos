@@ -11,14 +11,14 @@ export const POST = withAdmin(async function(req: Request) {
       return NextResponse.json({ error: 'IDs não fornecidos.' }, { status: 400 })
     }
 
-    // Inicializa o cliente do Supabase
+    // A MÁGICA AQUI: Trocamos a ANON_KEY pela SERVICE_ROLE_KEY
+    // Isso dá poder de "Deus" para a rota pular as regras do RLS e excluir os itens
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
 
     if (action === 'delete') {
-      // Faz o delete em massa no Supabase onde o 'id' do produto estiver dentro da lista de 'ids' recebida
       const { error } = await supabase
         .from('produtos')
         .delete()

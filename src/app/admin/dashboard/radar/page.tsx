@@ -1,11 +1,22 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { Button } from '@/components/ui/button'
-import { AlertCircle, TrendingDown, TrendingUp, Minus, Search, Trash2, Save } from 'lucide-react'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
+import {
+  AlertCircle, TrendingDown, TrendingUp, Minus,
+  Search, Trash2, Save, RefreshCw, Radar,
+  CheckCircle2, PackageSearch
+} from 'lucide-react'
 
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
+
+type StatusRadar = 'aguardando' | 'farejando' | 'sucesso' | 'igual' | 'erro'
 
 interface ProdutoRadar {
   id: string
@@ -13,246 +24,477 @@ interface ProdutoRadar {
   loja: string
   link_afiliado: string
   preco_banco: number
+  updatedAt?: string
   preco_novo: number | null
-  status: 'aguardando' | 'farejando' | 'sucesso' | 'erro'
+  status: StatusRadar
+}
+
+/** Delay aleatório entre 500ms e 1500ms para simular comportamento humano */
+function sleepAleatorio() {
+  const ms = Math.floor(Math.random() * 1000) + 500
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+function formatarPreco(valor: number) {
+  return `R$ ${valor.toFixed(2).replace('.', ',')}`
+}
+
+function tempoDesdeAtualizacao(dateStr?: string): string {
+  if (!dateStr) return ''
+  const diff = Date.now() - new Date(dateStr).getTime()
+  const dias = Math.floor(diff / (1000 * 60 * 60 * 24))
+  if (dias === 0) return 'Atualizado hoje'
+  if (dias === 1) return 'Atualizado há 1 dia'
+  return `Atualizado há ${dias} dias`
 }
 
 export default function RadarPage() {
   const [marketplaces, setMarketplaces] = useState<any[]>([])
   const [filtroLoja, setFiltroLoja] = useState('')
-  
   const [resultados, setResultados] = useState<ProdutoRadar[]>([])
   const [varrendo, setVarrendo] = useState(false)
   const [salvando, setSalvando] = useState(false)
+  const [varreduraConcluida, setVarreduraConcluida] = useState(false)
+  const [mostrarSoAlteracoes, setMostrarSoAlteracoes] = useState(false)
 
-  // Carrega apenas o dropdown de lojas ao abrir a tela
   useEffect(() => {
-    supabase.from('marketplaces').select('slug, nome').eq('ativo', true).then(({ data }) => {
-      if (data) setMarketplaces(data)
-    })
+    supabase
+      .from('marketplaces')
+      .select('slug, nome')
+      .eq('ativo', true)
+      .then(({ data }) => { if (data) setMarketplaces(data) })
   }, [])
-
-  // --- PASSO 1: INICIAR A VARREDURA ---
-  async function iniciarVarredura() {
-    setVarrendo(true)
-    setResultados([]) // Limpa a tela para a nova busca
-
-    // 1. Busca os produtos no banco de acordo com a loja escolhida
-    let query = supabase.from('produtos').select('id, nome, loja, link_afiliado, preco')
-    if (filtroLoja) query = query.eq('loja', filtroLoja)
-    
-    const { data: prods } = await query
-
-    if (!prods || prods.length === 0) {
-      alert("Nenhum produto encontrado para esta seleção.")
-      setVarrendo(false)
-      return
-    }
-
-    // 2. Coloca os produtos na tela com status 'aguardando'
-    const listaInicial: ProdutoRadar[] = prods.map(p => ({
-      id: p.id, nome: p.nome, loja: p.loja, link_afiliado: p.link_afiliado,
-      preco_banco: p.preco, preco_novo: null, status: 'aguardando'
-    }))
-    setResultados(listaInicial)
-
-    // 3. O Robô começa a trabalhar um por um (para não travar a Amazon)
-    for (const prod of listaInicial) {
-      atualizarLinha(prod.id, { status: 'farejando' })
-
-      try {
-        const res = await fetch('/api/scraper', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url: prod.link_afiliado })
-        })
-        const data = await res.json()
-
-        if (res.ok && data.preco) {
-          atualizarLinha(prod.id, { preco_novo: data.preco, status: 'sucesso' })
-        } else {
-          atualizarLinha(prod.id, { status: 'erro' })
-        }
-      } catch (error) {
-        atualizarLinha(prod.id, { status: 'erro' })
-      }
-    }
-    
-    setVarrendo(false)
-  }
 
   function atualizarLinha(id: string, updates: Partial<ProdutoRadar>) {
     setResultados(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p))
   }
 
-  // --- PASSO 2: SALVAR TODOS OS PREÇOS NOVOS ---
-  async function salvarTodos() {
-    // Filtra apenas os que deram sucesso e o preço NOVO é DIFERENTE do antigo
-    const paraSalvar = resultados.filter(p => p.status === 'sucesso' && p.preco_novo !== null && p.preco_novo !== p.preco_banco)
-    
-    if (paraSalvar.length === 0) {
-      alert("Não há novos preços diferentes para salvar.")
+  /** Raspa um único produto e atualiza a linha correspondente */
+  const rasparProduto = useCallback(async (prod: ProdutoRadar) => {
+    atualizarLinha(prod.id, { status: 'farejando' })
+
+    try {
+      const res = await fetch('/api/scraper', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: prod.link_afiliado }),
+      })
+
+      const data = await res.json()
+
+      if (res.ok && data.preco && data.preco > 0) {
+        if (data.preco !== prod.preco_banco) {
+          atualizarLinha(prod.id, { preco_novo: data.preco, status: 'sucesso' })
+        } else {
+          atualizarLinha(prod.id, { preco_novo: data.preco, status: 'igual' })
+        }
+      } else {
+        atualizarLinha(prod.id, { status: 'erro' })
+      }
+    } catch {
+      atualizarLinha(prod.id, { status: 'erro' })
+    }
+  }, [])
+
+  async function iniciarVarredura() {
+    setVarrendo(true)
+    setVarreduraConcluida(false)
+    setResultados([])
+    setMostrarSoAlteracoes(false)
+
+    let query = supabase.from('produtos').select('id, nome, lojaOrigem, loja, linkAfiliado, link_afiliado, preco, updatedAt')
+    if (filtroLoja) query = query.eq('lojaOrigem', filtroLoja)
+
+    const { data: prods } = await query
+
+    if (!prods || prods.length === 0) {
+      alert('Nenhum produto encontrado no banco para esta seleção.')
+      setVarrendo(false)
       return
     }
+
+    const listaInicial: ProdutoRadar[] = prods.map(p => ({
+      id: p.id,
+      nome: p.nome,
+      loja: p.lojaOrigem || p.loja || 'Desconhecida',
+      link_afiliado: p.linkAfiliado || p.link_afiliado || '',
+      preco_banco: p.preco,
+      updatedAt: p.updatedAt,
+      preco_novo: null,
+      status: 'aguardando',
+    }))
+
+    setResultados(listaInicial)
+
+    for (const prod of listaInicial) {
+      await rasparProduto(prod)
+      await sleepAleatorio()
+    }
+
+    setVarrendo(false)
+    setVarreduraConcluida(true)
+  }
+
+  async function salvarTodos() {
+    const paraSalvar = resultados.filter(
+      p => p.status === 'sucesso' && p.preco_novo !== null && p.preco_novo !== p.preco_banco
+    )
+    if (paraSalvar.length === 0) return
 
     setSalvando(true)
     const payload = paraSalvar.map(p => ({ id: p.id, preco: p.preco_novo }))
 
-    const res = await fetch('/api/radar', {
-      method: 'POST',
-      body: JSON.stringify({ action: 'update_prices', payload })
-    })
+    try {
+      const res = await fetch('/api/radar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'update_prices', payload }),
+      })
 
-    if (res.ok) {
-      // Atualiza a tela para mostrar que o preço do banco agora é o novo preço
-      setResultados(prev => prev.map(p => {
-        if (paraSalvar.some(salvo => salvo.id === p.id)) {
-          return { ...p, preco_banco: p.preco_novo as number, status: 'aguardando' }
-        }
-        return p
-      }))
-      alert(`${paraSalvar.length} preços atualizados com sucesso! (A data de cadastro foi mantida intacta)`)
-    } else {
-      alert("Erro ao salvar no banco de dados.")
+      if (res.ok) {
+        setResultados(prev =>
+          prev.map(p => {
+            if (paraSalvar.some(s => s.id === p.id)) {
+              return { ...p, preco_banco: p.preco_novo as number, preco_novo: null, status: 'igual' }
+            }
+            return p
+          })
+        )
+      } else {
+        alert('Erro ao salvar no banco de dados.')
+      }
+    } catch {
+      alert('Falha de comunicação ao salvar.')
+    } finally {
+      setSalvando(false)
     }
-    setSalvando(false)
   }
 
-  // --- PASSO 3: EXCLUIR PRODUTO DIRETO DO RADAR ---
   async function excluirProduto(id: string, nome: string) {
-    if (!confirm(`Deseja excluir permanentemente o produto "${nome}"?`)) return
+    if (!confirm(`Deseja excluir permanentemente "${nome}"?`)) return
 
     const res = await fetch('/api/radar', {
       method: 'POST',
-      body: JSON.stringify({ action: 'delete_product', id })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'delete_product', id }),
     })
 
     if (res.ok) {
       setResultados(prev => prev.filter(p => p.id !== id))
     } else {
-      alert("Erro ao excluir o produto.")
+      alert('Erro ao excluir o produto.')
     }
   }
 
-  // --- RENDERIZAÇÃO DA COR DO PREÇO ---
-  const renderPrecoNovo = (prod: ProdutoRadar) => {
-    if (prod.status === 'aguardando') return <span className="text-gray-600 text-xs">—</span>
-    if (prod.status === 'farejando') return <span className="text-primary animate-pulse text-xs font-bold">Farejando...</span>
-    if (prod.status === 'erro') return <span className="text-red-500 text-xs flex items-center justify-end gap-1"><AlertCircle size={12}/> Erro/Indisponível</span>
+  // Derivados para os contadores e filtros
+  const qtdSucesso = resultados.filter(p => p.status === 'sucesso').length
+  const qtdErro = resultados.filter(p => p.status === 'erro').length
+  const qtdIgual = resultados.filter(p => p.status === 'igual').length
+  const qtdFarejando = resultados.filter(p => p.status === 'farejando' || p.status === 'aguardando').length
 
+  const resultadosFiltrados = mostrarSoAlteracoes
+    ? resultados.filter(p => p.status === 'sucesso' || p.status === 'erro' || p.status === 'farejando')
+    : resultados
+
+  const varreduraTerminou = varreduraConcluida && !varrendo
+  const tudoIgualSemErro = varreduraTerminou && qtdSucesso === 0 && qtdErro === 0
+
+  function renderCelulaNovo(prod: ProdutoRadar) {
+    if (prod.status === 'aguardando') return <span className="text-gray-600 text-xs">—</span>
+
+    if (prod.status === 'farejando') {
+      return (
+        <span className="text-primary animate-pulse text-xs font-bold tracking-wider">
+          Farejando...
+        </span>
+      )
+    }
+
+    if (prod.status === 'erro') {
+      return (
+        <span className="text-red-400 text-xs flex items-center justify-end gap-1.5">
+          <AlertCircle size={12} /> Erro/Indisponível
+        </span>
+      )
+    }
+
+    if (prod.status === 'igual') {
+      return <span className="text-gray-500 text-xs">= Sem mudança</span>
+    }
+
+    // status === 'sucesso'
     const subiu = prod.preco_novo! > prod.preco_banco
     const desceu = prod.preco_novo! < prod.preco_banco
+    const variacaoPct = Math.round(Math.abs((prod.preco_novo! - prod.preco_banco) / prod.preco_banco) * 100)
+    const ehOportunidade = desceu && variacaoPct >= 5
 
     return (
-      <div className={`flex items-center justify-end gap-1.5 font-black text-sm ${subiu ? 'text-red-500' : desceu ? 'text-[#22C55E]' : 'text-gray-400'}`}>
-        {subiu ? <TrendingUp size={14} /> : desceu ? <TrendingDown size={14} /> : <Minus size={14} />}
-        R$ {prod.preco_novo!.toFixed(2).replace('.', ',')}
+      <div className="flex items-center justify-end gap-2">
+        {ehOportunidade && (
+          <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-[#22C55E]/15 text-[#22C55E] border border-[#22C55E]/30 tracking-widest whitespace-nowrap">
+            -{variacaoPct}% OFF
+          </span>
+        )}
+        <span className={`flex items-center gap-1.5 font-black text-sm ${subiu ? 'text-red-400' : desceu ? 'text-[#22C55E]' : 'text-gray-400'}`}>
+          {subiu ? <TrendingUp size={14} /> : desceu ? <TrendingDown size={14} /> : <Minus size={14} />}
+          {formatarPreco(prod.preco_novo!)}
+        </span>
       </div>
     )
   }
 
+  function getRowStyle(prod: ProdutoRadar): string {
+    const base = 'border-b border-[#2A2A35] transition-all duration-300'
+    if (prod.status === 'farejando') return `${base} bg-primary/5`
+    if (prod.status === 'sucesso') {
+      const desceu = prod.preco_novo! < prod.preco_banco
+      const subiu = prod.preco_novo! > prod.preco_banco
+      if (desceu) return `${base} bg-[#22C55E]/5 shadow-[inset_3px_0_0_#22C55E] hover:bg-[#22C55E]/10`
+      if (subiu) return `${base} bg-red-500/5 shadow-[inset_3px_0_0_rgba(239,68,68,0.5)] hover:bg-red-500/10`
+    }
+    if (prod.status === 'erro') return `${base} hover:bg-red-500/5`
+    return `${base} hover:bg-white/3`
+  }
+
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-20">
-      
-      <div className="flex flex-col bg-[#1A1A24] p-6 rounded-2xl border border-[#2A2A35] shadow-lg gap-6">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="text-3xl">🦖</span>
-            <h1 className="text-3xl font-black text-white tracking-tight">Radar de Ofertas</h1>
+    <div className="space-y-5 max-w-7xl mx-auto pb-20">
+
+      {/* HEADER */}
+      <div className="bg-[#1A1A24] p-5 sm:p-6 rounded-2xl border border-[#2A2A35] shadow-lg">
+        <div className="flex items-center gap-3 mb-1">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+            <Radar size={20} className="text-primary" />
           </div>
-          <p className="text-muted-foreground text-sm mt-1">Selecione o alvo e inicie a varredura para identificar mudanças de preço.</p>
+          <div>
+            <h1 className="text-2xl font-black text-white tracking-tight">Radar de Preços</h1>
+            <p className="text-muted-foreground text-xs mt-0.5">
+              Selecione o alvo e inicie a varredura. O robô escaneia um produto por vez com delay aleatório.
+            </p>
+          </div>
         </div>
 
-        {/* CONTROLES DE VARREDURA */}
-        <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center bg-[#0F0F13] p-3 rounded-xl border border-[#2A2A35]">
+        {/* CONTROLES */}
+        <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center bg-[#0F0F13] p-3 rounded-xl border border-[#2A2A35] mt-4">
           <select
+            aria-label="Filtro de loja"
             value={filtroLoja}
             onChange={e => setFiltroLoja(e.target.value)}
-            className="h-12 rounded-lg border border-[#2A2A35] bg-[#1A1A24] px-4 text-sm text-white font-bold focus:outline-none uppercase w-full sm:w-64"
+            className="h-11 rounded-lg border border-[#2A2A35] bg-[#1A1A24] px-4 text-sm text-white font-bold focus:outline-none focus:ring-1 focus:ring-primary uppercase w-full sm:w-60"
             disabled={varrendo}
           >
-            <option value="">🚀 TODAS AS LOJAS</option>
-            {marketplaces.map(mk => <option key={mk.slug} value={mk.slug}>{mk.nome.toUpperCase()}</option>)}
+            <option value="">Todas as Lojas</option>
+            {marketplaces.map(mk => (
+              <option key={mk.slug} value={mk.slug}>{mk.nome.toUpperCase()}</option>
+            ))}
           </select>
-          
-          <Button 
-            onClick={iniciarVarredura} 
+
+          <Button
+            onClick={iniciarVarredura}
             disabled={varrendo}
-            className="h-12 bg-primary text-black font-black text-sm hover:bg-primary/80 flex-1 flex items-center gap-2 shadow-[0_0_20px_rgba(34,197,94,0.2)]"
+            className="h-11 bg-primary text-black font-black text-sm hover:bg-primary/80 flex-1 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(34,197,94,0.2)]"
           >
-            <Search size={18} className={varrendo ? "animate-pulse" : ""} /> 
-            {varrendo ? 'Varredura em andamento...' : 'Iniciar Varredura'}
+            <Search size={16} className={varrendo ? 'animate-pulse' : ''} />
+            {varrendo ? `Varrendo... (${qtdFarejando} restantes)` : 'Iniciar Varredura'}
           </Button>
         </div>
-      </div>
 
-      {/* RESULTADOS DA VARREDURA (Só aparece se tiver resultado) */}
-      {resultados.length > 0 && (
-        <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-black text-white">Resultados da Análise ({resultados.length})</h2>
-            <Button 
-              onClick={salvarTodos} 
-              disabled={salvando || varrendo}
-              className="bg-blue-600 text-white font-bold hover:bg-blue-700 flex items-center gap-2 shadow-lg"
-            >
-              <Save size={16} /> 
-              {salvando ? 'Salvando...' : 'Atualizar Preços Modificados'}
-            </Button>
-          </div>
-
-          <div className="bg-[#1A1A24] border border-[#2A2A35] rounded-2xl overflow-hidden shadow-lg">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left text-gray-300">
-                <thead className="text-[10px] uppercase bg-[#0F0F13] text-gray-500 border-b border-[#2A2A35] font-black tracking-widest">
-                  <tr>
-                    <th className="px-5 py-4">Produto</th>
-                    <th className="px-5 py-4 text-center">Status</th>
-                    <th className="px-5 py-4 text-right">Preço Banco</th>
-                    <th className="px-5 py-4 text-right bg-primary/5">Preço Loja</th>
-                    <th className="px-5 py-4 text-center">Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {resultados.map(prod => (
-                    <tr key={prod.id} className="border-b border-[#2A2A35] hover:bg-white/5 transition-colors">
-                      <td className="px-5 py-4">
-                        <div className="flex flex-col min-w-0 max-w-sm">
-                          <a href={prod.link_afiliado} target="_blank" rel="noreferrer" className="font-bold text-white hover:text-primary truncate">
-                            {prod.nome}
-                          </a>
-                          <span className="text-[10px] text-gray-500 uppercase font-bold tracking-wider mt-1 w-fit bg-[#0F0F13] px-2 py-0.5 rounded border border-[#2A2A35]">
-                            {prod.loja}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-5 py-4 text-center">
-                        {prod.status === 'aguardando' && <span className="w-2 h-2 rounded-full bg-gray-600 inline-block" title="Aguardando" />}
-                        {prod.status === 'farejando' && <span className="w-2 h-2 rounded-full bg-primary animate-ping inline-block" title="Buscando" />}
-                        {prod.status === 'sucesso' && <span className="w-2 h-2 rounded-full bg-[#22C55E] inline-block shadow-[0_0_10px_rgba(34,197,94,0.8)]" title="Sucesso" />}
-                        {prod.status === 'erro' && <span className="w-2 h-2 rounded-full bg-red-500 inline-block shadow-[0_0_10px_rgba(239,68,68,0.8)]" title="Erro" />}
-                      </td>
-                      <td className="px-5 py-4 text-right font-mono text-gray-400 text-sm">
-                        R$ {prod.preco_banco.toFixed(2).replace('.', ',')}
-                      </td>
-                      <td className="px-5 py-4 text-right bg-primary/5">
-                        {renderPrecoNovo(prod)}
-                      </td>
-                      <td className="px-5 py-4 text-center">
-                        <button 
-                          onClick={() => excluirProduto(prod.id, prod.nome)}
-                          className="text-gray-500 hover:text-red-500 hover:bg-red-500/10 p-2 rounded-lg transition-colors"
-                          title="Excluir produto do banco de dados"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+        {/* BARRA DE PROGRESSO */}
+        {(varrendo || varreduraConcluida) && resultados.length > 0 && (
+          <div className="mt-3 space-y-1.5">
+            <div className="w-full bg-[#0F0F13] rounded-full h-1.5 border border-[#2A2A35] overflow-hidden">
+              <div
+                className="h-full bg-primary rounded-full transition-all duration-500 w-[var(--radar-progress)]"
+                style={{ '--radar-progress': `${((resultados.length - qtdFarejando) / resultados.length) * 100}%` } as React.CSSProperties}
+              />
+            </div>
+            <div className="flex gap-4 text-[11px] font-bold">
+              <span className="text-[#22C55E]">{qtdSucesso} alterados</span>
+              <span className="text-gray-500">{qtdIgual} iguais</span>
+              <span className="text-red-400">{qtdErro} erros</span>
             </div>
           </div>
+        )}
+      </div>
+
+      {/* EMPTY STATE: nenhuma varredura ainda */}
+      {resultados.length === 0 && !varrendo && !varreduraConcluida && (
+        <div className="flex flex-col items-center justify-center py-20 text-center gap-3">
+          <div className="w-16 h-16 rounded-2xl bg-[#1A1A24] border border-[#2A2A35] flex items-center justify-center">
+            <PackageSearch size={28} className="text-gray-600" />
+          </div>
+          <p className="text-gray-500 text-sm font-bold">Nenhuma varredura iniciada.</p>
+          <p className="text-gray-600 text-xs">Selecione uma loja (ou todas) e clique em &quot;Iniciar Varredura&quot;.</p>
+        </div>
+      )}
+
+      {/* EMPTY STATE: varredura concluída sem mudanças */}
+      {tudoIgualSemErro && resultadosFiltrados.every(p => p.status === 'igual') && (
+        <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
+          <div className="w-16 h-16 rounded-2xl bg-[#22C55E]/10 border border-[#22C55E]/20 flex items-center justify-center">
+            <CheckCircle2 size={28} className="text-[#22C55E]" />
+          </div>
+          <p className="text-white font-black text-lg">Tudo em ordem!</p>
+          <p className="text-gray-500 text-sm">Nenhuma alteração de preço detectada nesta varredura.</p>
+        </div>
+      )}
+
+      {/* RESULTADOS */}
+      {resultados.length > 0 && (
+        <div className="space-y-3">
+
+          {/* TOOLBAR DOS RESULTADOS */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <h2 className="text-base font-black text-white">
+                Resultados
+              </h2>
+              <span className="text-xs text-gray-500 bg-[#0F0F13] border border-[#2A2A35] px-2 py-0.5 rounded-full font-bold">
+                {resultadosFiltrados.length} de {resultados.length}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-3 flex-wrap">
+              {/* Toggle: mostrar só alterações */}
+              <div className="flex items-center gap-2 bg-[#0F0F13] border border-[#2A2A35] rounded-lg px-3 py-2">
+                <Switch
+                  id="filtro-alteracoes"
+                  checked={mostrarSoAlteracoes}
+                  onCheckedChange={setMostrarSoAlteracoes}
+                  className="scale-75 origin-left"
+                />
+                <Label htmlFor="filtro-alteracoes" className="text-xs font-bold cursor-pointer select-none whitespace-nowrap">
+                  Só alterações
+                </Label>
+              </div>
+
+              {/* Botão de salvar com contador */}
+              {qtdSucesso > 0 && (
+                <Button
+                  onClick={salvarTodos}
+                  disabled={salvando || varrendo}
+                  className="h-9 bg-blue-600 text-white font-bold hover:bg-blue-700 flex items-center gap-2 text-sm"
+                >
+                  <Save size={14} />
+                  {salvando ? 'Salvando...' : `Salvar ${qtdSucesso} preço${qtdSucesso > 1 ? 's' : ''}`}
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* TABELA */}
+          {resultadosFiltrados.length > 0 && (
+            <div className="bg-[#1A1A24] border border-[#2A2A35] rounded-2xl overflow-hidden shadow-lg">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left text-gray-300">
+                  <thead className="text-[10px] uppercase bg-[#0F0F13] text-gray-500 border-b border-[#2A2A35] font-black tracking-widest">
+                    <tr>
+                      <th className="px-5 py-3.5">Produto</th>
+                      <th className="px-4 py-3.5 text-center w-16">Status</th>
+                      <th className="px-5 py-3.5 text-right">Preço Cadastrado</th>
+                      <th className="px-5 py-3.5 text-right bg-primary/5">Preço Loja</th>
+                      <th className="px-4 py-3.5 text-center w-20">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {resultadosFiltrados.map(prod => (
+                      <tr key={prod.id} className={getRowStyle(prod)}>
+
+                        {/* NOME + LOJA */}
+                        <td className="px-5 py-3.5">
+                          <div className="flex flex-col min-w-0 max-w-sm gap-1">
+                            <a
+                              href={prod.link_afiliado}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="font-bold text-white hover:text-primary truncate text-sm leading-tight"
+                              title={prod.nome}
+                            >
+                              {prod.nome}
+                            </a>
+                            <span className="text-[10px] text-gray-500 uppercase font-bold tracking-wider w-fit bg-[#0F0F13] px-2 py-0.5 rounded border border-[#2A2A35]">
+                              {prod.loja}
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* INDICADOR STATUS */}
+                        <td className="px-4 py-3.5 text-center">
+                          {prod.status === 'aguardando' && (
+                            <span className="w-2 h-2 rounded-full bg-gray-600 inline-block" title="Aguardando" />
+                          )}
+                          {prod.status === 'farejando' && (
+                            <span className="w-2 h-2 rounded-full bg-primary animate-ping inline-block" title="Farejando" />
+                          )}
+                          {prod.status === 'sucesso' && (
+                            <span className="w-2 h-2 rounded-full bg-[#22C55E] inline-block shadow-[0_0_8px_rgba(34,197,94,0.8)]" title="Sucesso" />
+                          )}
+                          {prod.status === 'igual' && (
+                            <span className="w-2 h-2 rounded-full bg-gray-500 inline-block" title="Sem mudança" />
+                          )}
+                          {prod.status === 'erro' && (
+                            <span className="w-2 h-2 rounded-full bg-red-500 inline-block shadow-[0_0_8px_rgba(239,68,68,0.7)]" title="Erro" />
+                          )}
+                        </td>
+
+                        {/* PREÇO BANCO */}
+                        <td className="px-5 py-3.5 text-right">
+                          <span
+                            className="font-mono text-gray-400 text-sm cursor-help"
+                            title={tempoDesdeAtualizacao(prod.updatedAt)}
+                          >
+                            {formatarPreco(prod.preco_banco)}
+                          </span>
+                          {prod.updatedAt && (
+                            <div className="text-[10px] text-gray-600 mt-0.5">
+                              {tempoDesdeAtualizacao(prod.updatedAt)}
+                            </div>
+                          )}
+                        </td>
+
+                        {/* PREÇO NOVO */}
+                        <td className="px-5 py-3.5 text-right bg-primary/5">
+                          {renderCelulaNovo(prod)}
+                        </td>
+
+                        {/* AÇÕES */}
+                        <td className="px-4 py-3.5">
+                          <div className="flex items-center justify-center gap-1">
+                            {prod.status === 'erro' && (
+                              <button
+                                type="button"
+                                onClick={() => rasparProduto(prod)}
+                                title="Tentar novamente"
+                                className="text-gray-500 hover:text-primary hover:bg-primary/10 p-1.5 rounded-lg transition-colors"
+                              >
+                                <RefreshCw size={13} />
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => excluirProduto(prod.id, prod.nome)}
+                              title="Excluir produto"
+                              className="text-gray-500 hover:text-red-500 hover:bg-red-500/10 p-1.5 rounded-lg transition-colors"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                        </td>
+
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* EMPTY STATE quando filtro de alterações está ativo e não tem nada */}
+          {resultadosFiltrados.length === 0 && mostrarSoAlteracoes && (
+            <div className="flex flex-col items-center justify-center py-12 text-center gap-2">
+              <CheckCircle2 size={28} className="text-[#22C55E]" />
+              <p className="text-gray-400 font-bold text-sm">Nenhuma alteração detectada até agora.</p>
+            </div>
+          )}
         </div>
       )}
     </div>

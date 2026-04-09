@@ -15,13 +15,14 @@ export const PUT = withAdmin(async function(request: Request, { params }: { para
     const { data, error } = await supabase.from('produtos').update({
       nome: produto.nome,
       categoriaSlugs: categoriaSlugs,
-      lojaOrigem: produto.loja,
+      lojaOrigem: produto.lojaOrigem || produto.loja,
       preco: produto.preco,
       precoOriginal: produto.preco_original || null,
       desconto_pct: produto.desconto_pct || null,
       imagem: produto.imagem,
       linkAfiliado: produto.link_afiliado, // Mapeia o nome do form para o banco
       destaque: produto.destaque,
+      createdAt: produto.createdAt,
       novo: produto.novo,
       tags: produto.tags || []
     }).eq('id', id).select()

@@ -13,9 +13,11 @@ import { createClient } from '@supabase/supabase-js'
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
 interface ProdutoComCategoria extends Produto {
-  categoriaSlug?: string
+  categoriaSlug?: string[]
   categoriaSlugs?: string[]
-  linkAfiliado?: string 
+  linkAfiliado?: string
+  lojaOrigem?: string
+  precoOriginal?: number
 }
 
 interface ProductFormProps {
@@ -29,19 +31,20 @@ export default function ProductForm({ categorias = [], produto, onSave, onCancel
   const isEdit = !!produto
   const [nome, setNome] = useState(produto?.nome ?? '')
 
-  const initialCategories = produto?.categoriaSlugs?.length 
-    ? produto.categoriaSlugs 
-    : (produto?.categoriaSlug ? [produto.categoriaSlug] : [categorias?.[0]?.slug ?? ''])
+  const initialCategories: string[] = (
+    produto?.categoriaSlugs?.length 
+      ? produto.categoriaSlugs 
+      : (produto?.categoriaSlug ? [produto.categoriaSlug] : [categorias?.[0]?.slug ?? ''])
+  ).flat() as string[];
   
   const [selectedCategorias, setSelectedCategorias] = useState<string[]>(initialCategories)
   
   const [preco, setPreco] = useState(produto?.preco?.toString() ?? '')
-  // Lemos as duas versões para garantir que pegamos do banco, seja lá como ele cuspir o dado
-  const [precoOriginal, setPrecoOriginal] = useState((produto as any)?.precoOriginal?.toString() || produto?.preco_original?.toString() || '')
+  const [precoOriginal, setPrecoOriginal] = useState(produto?.precoOriginal?.toString() || produto?.preco_original?.toString() || '')
   const [desconto, setDesconto] = useState(produto?.desconto_pct?.toString() ?? '')
   const [imagem, setImagem] = useState(produto?.imagem ?? '')
   const [linkAfiliado, setLinkAfiliado] = useState(produto?.linkAfiliado || produto?.link_afiliado || '')
-  const [loja, setLoja] = useState<string>((produto?.loja as string) ?? 'amazon')
+  const [loja, setLoja] = useState<string>(produto?.lojaOrigem || produto?.loja || 'amazon')
   
   const [tagInput, setTagInput] = useState('')
   const [tags, setTags] = useState<string[]>(produto?.tags ?? [])
@@ -56,7 +59,7 @@ export default function ProductForm({ categorias = [], produto, onSave, onCancel
   const [loading, setLoading] = useState(false)
   const [isExtracting, setIsExtracting] = useState(false)
 
-  // ESTADO DOS MARKETPLACES (Vindo direto do Supabase)
+  // ESTADO DOS MARKETPLACES
   const [marketplaces, setMarketplaces] = useState<any[]>([])
 
   useEffect(() => {
@@ -64,6 +67,14 @@ export default function ProductForm({ categorias = [], produto, onSave, onCancel
       if (data) setMarketplaces(data)
     })
   }, [])
+
+  // Lógica de Auditoria de 90 dias
+  const isPassado90Dias = (() => {
+    if (!dataCadastro) return false;
+    const diffTime = new Date().getTime() - new Date(dataCadastro).getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > 90;
+  })();
 
   function handlePrecoOriginalChange(v: string) {
     setPrecoOriginal(v)
@@ -123,7 +134,6 @@ export default function ProductForm({ categorias = [], produto, onSave, onCancel
       return
     }
 
-    // 1. AUTO-DETECT DA LOJA (Baseado no seu Banco de Dados, 100% dinâmico)
     let lojaDetectada = ''
     for (const mk of marketplaces) {
       if (mk.dominios) {
@@ -140,7 +150,6 @@ export default function ProductForm({ categorias = [], produto, onSave, onCancel
       alert('Atenção: O link não bateu com nenhuma loja ativa. Selecione a loja manualmente se quiser continuar.')
     }
 
-    // 2. EXTRAÇÃO UNIVERSAL (Qualquer loja ativa passa direto agora!)
     setIsExtracting(true)
     try {
       const res = await fetch('/api/scraper', {
@@ -166,7 +175,6 @@ export default function ProductForm({ categorias = [], produto, onSave, onCancel
             setDesconto('')
           }
         } else {
-           // Se for uma loja desconhecida pelo robô, ele não vai achar o preço, mas traz a imagem e o título.
            if (lojaDetectada !== 'amazon' && lojaDetectada !== 'mercadolivre') {
              alert(`Título e Imagem extraídos via Modo Universal! Digite o preço manualmente para a loja: ${lojaDetectada.toUpperCase()}`)
            }
@@ -207,7 +215,7 @@ export default function ProductForm({ categorias = [], produto, onSave, onCancel
     
     setLoading(true)
 
-    const novoProduto: Produto = {
+    const novoProduto: any = {
       id: produto?.id ?? `prod-${Date.now()}`,
       nome: nomeLimpo,
       preco: precoNum,
@@ -215,7 +223,8 @@ export default function ProductForm({ categorias = [], produto, onSave, onCancel
       desconto_pct: desconto ? parseInt(desconto) : undefined,
       imagem: imagemLimpa || '',
       link_afiliado: linkLimpo,
-      loja: loja as Loja,
+      loja: loja, 
+      lojaOrigem: loja,
       tags: tags.length > 0 ? tags : undefined,
       destaque,
       novo,
@@ -299,6 +308,7 @@ export default function ProductForm({ categorias = [], produto, onSave, onCancel
           <div className="space-y-1">
             <Label className="text-xs text-muted-foreground">Loja Origem <span className="text-primary">*</span></Label>
             <select
+              aria-label="Loja Origem"
               value={loja}
               onChange={e => setLoja(e.target.value)}
               className="flex h-9 w-full items-center justify-between rounded-lg border border-[#2A2A35] bg-[#0F0F13] px-3 py-1 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary uppercase"
@@ -385,7 +395,6 @@ export default function ProductForm({ categorias = [], produto, onSave, onCancel
           </div>
 
           <div className="space-y-1 flex-1">
-            {/* O Texto "Amazon" foi removido daqui já que agora é dinâmico */}
             <Label className="text-xs text-muted-foreground">Link do Produto <span className="text-primary">*</span></Label>
             <div className="flex gap-2">
               <Input 
@@ -404,16 +413,25 @@ export default function ProductForm({ categorias = [], produto, onSave, onCancel
           </div>
         </div>
 
-        {/* BLOCO 5: Auditoria & Flags (Ocupando a largura inteira) */}
+        {/* BLOCO 5: Auditoria & Flags */}
         <div className="lg:col-span-2 bg-[#1A1A24]/40 p-4 sm:p-5 rounded-xl border border-[#2A2A35] flex flex-col gap-3 h-full">
           <h3 className="text-xs font-black uppercase tracking-widest text-[#A1A1AA] mb-1">5. Auditoria & Flags</h3>
           
           <div className="flex flex-col sm:flex-row gap-4 sm:items-end w-full">
             <div className="space-y-1 flex-1">
-              <Label className="text-[11px] text-muted-foreground">Data Cadastro</Label>
+              <div className="flex items-center justify-between">
+                <Label className="text-[11px] text-muted-foreground">Data Cadastro</Label>
+                {isPassado90Dias && (
+                  <span className="text-[10px] font-black text-[#FF3838] bg-[#FF3838]/10 px-2 py-0.5 rounded uppercase animate-pulse">
+                    ⚠️ Revisão Necessária (+90d)
+                  </span>
+                )}
+              </div>
               <Input 
                 type="date" value={dataCadastro} onChange={e => setDataCadastro(e.target.value)}
-                className="bg-[#0F0F13] border-[#2A2A35] h-9 w-full text-xs rounded-lg px-2"
+                className={`bg-[#0F0F13] border h-9 w-full text-xs rounded-lg px-2 transition-colors ${
+                  isPassado90Dias ? 'border-[#FF3838]' : 'border-[#2A2A35]'
+                }`}
               />
             </div>
             

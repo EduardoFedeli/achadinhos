@@ -2,9 +2,8 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Package, FolderTree, Radar, Store } from 'lucide-react'
+import { LayoutDashboard, Package, FolderTree, Radar, Store, AlertTriangle } from 'lucide-react'
 import AdminLogoutButton from '@/components/admin/AdminLogoutButton'
-
 
 export default function AdminSidebar() {
   const pathname = usePathname()
@@ -13,9 +12,10 @@ export default function AdminSidebar() {
     { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
     { name: 'Produtos', href: '/admin/dashboard/produtos', icon: Package },
     { name: 'Categorias', href: '/admin/dashboard/categorias', icon: FolderTree },
-    // 👇 Olha a linha nova do Radar aqui:
     { name: 'Marketplaces', href: '/admin/dashboard/marketplaces', icon: Store },
     { name: 'Radar T-Hex', href: '/admin/dashboard/radar', icon: Radar },
+    // 👇 Nova linha da Auditoria adicionada aqui:
+    { name: 'Auditoria (+90d)', href: '/admin/dashboard/auditoria', icon: AlertTriangle },
   ]
 
   return (
