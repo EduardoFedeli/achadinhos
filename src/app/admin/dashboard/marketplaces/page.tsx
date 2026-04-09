@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Pencil, Trash2, CheckSquare } from 'lucide-react'
+import { Switch } from '@/components/ui/switch'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -18,6 +19,7 @@ export default function MarketplacesPage() {
   const [nome, setNome] = useState('')
   const [slug, setSlug] = useState('')
   const [dominios, setDominios] = useState('')
+  const [scraperAtivo, setScraperAtivo] = useState(true)
   const [salvando, setSalvando] = useState(false)
 
   useEffect(() => {
@@ -64,13 +66,14 @@ export default function MarketplacesPage() {
     }
   }
 
-  function abrirFormularioNova() {
-    setEditandoId(null); setNome(''); setSlug(''); setDominios('')
+function abrirFormularioNova() {
+    setEditandoId(null); setNome(''); setSlug(''); setDominios(''); setScraperAtivo(true); // <-- adicione aqui
     setShowForm(true)
   }
 
-  function abrirFormularioEdicao(loja: any) {
-    setEditandoId(loja.id); setNome(loja.nome); setSlug(loja.slug); setDominios(loja.dominios || '')
+function abrirFormularioEdicao(loja: any) {
+    setEditandoId(loja.id); setNome(loja.nome); setSlug(loja.slug); setDominios(loja.dominios || ''); 
+    setScraperAtivo(loja.scraper_ativo ?? true); // <-- adicione aqui
     setShowForm(true)
   }
 
@@ -78,7 +81,7 @@ export default function MarketplacesPage() {
     e.preventDefault()
     setSalvando(true)
     
-    const payload = { nome: nome.trim(), slug: slug.trim(), dominios: dominios.trim(), cor: '#A1A1AA' }
+    const payload = { nome: nome.trim(), slug: slug.trim(), dominios: dominios.trim(), cor: '#A1A1AA', scraper_ativo: scraperAtivo }
 
     if (editandoId) {
       await fetch('/api/marketplaces', { method: 'POST', body: JSON.stringify({ action: 'update', id: editandoId, payload }) })
@@ -132,6 +135,13 @@ export default function MarketplacesPage() {
               <Input required value={dominios} onChange={e => setDominios(e.target.value)} placeholder="Ex: amazon.com.br, amzn.to" className="bg-[#0F0F13] border-[#2A2A35] h-10" />
             </div>
           </div>
+          <div className="flex items-center justify-between bg-[#0F0F13] border border-[#2A2A35] p-3 rounded-lg mt-2">
+            <div>
+              <Label className="text-sm font-bold text-white">Permite Scraper (Radar Automático)</Label>
+              <p className="text-[10px] text-gray-500">Desative se a loja bloquear o robô. Os produtos irão para a Fila de Revisão Manual.</p>
+            </div>
+            <Switch checked={scraperAtivo} onCheckedChange={setScraperAtivo} />
+          </div>
           <div className="flex justify-end pt-2">
             <Button type="submit" disabled={salvando} className="bg-[#22C55E] text-black font-bold h-10 px-6">
               {salvando ? 'Salvando...' : 'Salvar Alterações'}
@@ -150,7 +160,7 @@ export default function MarketplacesPage() {
             <Button size="sm" onClick={() => acaoEmMassa('ativar')} className="bg-[#22C55E] text-black font-bold text-xs hover:bg-[#22C55E]/80">Ativar</Button>
             <Button size="sm" onClick={() => acaoEmMassa('pausar')} className="bg-orange-500 text-white font-bold text-xs hover:bg-orange-600">Pausar</Button>
             <Button size="sm" onClick={() => acaoEmMassa('excluir')} className="bg-red-500 text-white font-bold text-xs hover:bg-red-600 flex items-center gap-1">
-              <Trash2 size={14} /> Excluir
+              <Trash2 size={14} aria-hidden="true" /> Excluir
             </Button>
           </div>
         </div>
@@ -161,7 +171,13 @@ export default function MarketplacesPage() {
           <thead className="text-xs uppercase bg-[#0F0F13] text-gray-400">
             <tr>
               <th className="px-4 py-4 w-12">
-                <input type="checkbox" checked={selecionados.length === lojas.length && lojas.length > 0} onChange={toggleSelecionarTodos} className="w-4 h-4 rounded border-[#2A2A35] bg-[#1A1A24] text-primary" />
+                <input 
+                  type="checkbox" 
+                  aria-label="Selecionar todos os marketplaces"
+                  checked={selecionados.length === lojas.length && lojas.length > 0} 
+                  onChange={toggleSelecionarTodos} 
+                  className="w-4 h-4 rounded border-[#2A2A35] bg-[#1A1A24] text-primary" 
+                />
               </th>
               <th className="px-4 py-4">Loja</th>
               <th className="px-4 py-4">Padrões de Link</th>
@@ -175,21 +191,36 @@ export default function MarketplacesPage() {
               return (
                 <tr key={loja.id} className={`border-b border-[#2A2A35] transition-colors ${selecionado ? 'bg-primary/5' : 'hover:bg-white/5'}`}>
                   <td className="px-4 py-4">
-                    <input type="checkbox" checked={selecionado} onChange={() => toggleSelecionar(loja.id)} className="w-4 h-4 rounded border-[#2A2A35] bg-[#1A1A24] text-primary" />
+                    <input 
+                      type="checkbox" 
+                      aria-label={`Selecionar marketplace ${loja.nome}`}
+                      checked={selecionado} 
+                      onChange={() => toggleSelecionar(loja.id)} 
+                      className="w-4 h-4 rounded border-[#2A2A35] bg-[#1A1A24] text-primary" 
+                    />
                   </td>
                   <td className="px-4 py-4 font-bold text-white">{loja.nome}</td>
                   <td className="px-4 py-4 font-mono text-xs text-gray-400">{loja.dominios || '—'}</td>
                   <td className="px-4 py-4 text-center">
                     <button 
                       onClick={() => toggleStatusIndividual(loja.id, loja.ativo)}
+                      aria-label={`Alternar status da loja ${loja.nome}`}
+                      title={`Alternar status da loja ${loja.nome}`}
                       className={`px-3 py-1 rounded-full text-[10px] font-black transition-all ${loja.ativo ? 'bg-[#22C55E]/10 text-[#22C55E] border border-[#22C55E]/30' : 'bg-orange-500/10 text-orange-500 border border-orange-500/30'}`}
                     >
                       {loja.ativo ? 'ATIVO' : 'PAUSADO'}
                     </button>
                   </td>
                   <td className="px-4 py-4 text-right">
-                    <Button variant="ghost" size="sm" onClick={() => abrirFormularioEdicao(loja)} className="text-gray-400 hover:text-primary hover:bg-primary/10 h-8 px-2">
-                      <Pencil size={16} />
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => abrirFormularioEdicao(loja)} 
+                      className="text-gray-400 hover:text-primary hover:bg-primary/10 h-8 px-2"
+                      aria-label={`Editar marketplace ${loja.nome}`}
+                      title={`Editar marketplace ${loja.nome}`}
+                    >
+                      <Pencil size={16} aria-hidden="true" />
                     </Button>
                   </td>
                 </tr>

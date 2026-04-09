@@ -2,58 +2,61 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { withAdmin } from '@/lib/auth'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey)
-
-export const POST = withAdmin(async function(request: Request) {
+export const POST = withAdmin(async function(req: Request) {
   try {
-    const body = await request.json()
+    const body = await req.json()
     const { produto, categoriaSlugs } = body
 
-    if (!categoriaSlugs || categoriaSlugs.length === 0) {
-      return NextResponse.json({ error: 'Nenhuma categoria informada' }, { status: 400 })
-    }
-
-    const produtoParaInserir = {
+    // 1. Mapeamento e Blindagem
+    // Garantimos que o objeto enviado ao Supabase tenha exatamente 
+    // os nomes das colunas da tabela 'produtos'.
+    const insertData = {
+      id: produto.id,
       nome: produto.nome,
       categoriaSlugs: categoriaSlugs,
-      lojaOrigem: produto.loja,
+      lojaOrigem: produto.lojaOrigem || produto.loja || 'amazon', // Resolve o conflito pro Radar
       preco: produto.preco,
       precoOriginal: produto.preco_original || null,
       desconto_pct: produto.desconto_pct || null,
       imagem: produto.imagem,
       linkAfiliado: produto.link_afiliado,
       destaque: produto.destaque,
+      createdAt: produto.createdAt,
       novo: produto.novo,
-      tags: produto.tags || [],
-      createdAt: produto.createdAt
+      tags: produto.tags || []
     }
 
-    const { data, error } = await supabase.from('produtos').insert([produtoParaInserir]).select()
+    // 2. Insere na tabela principal
+    const { data: newProd, error: prodError } = await supabase
+      .from('produtos')
+      .insert([insertData])
+      .select('id')
+      .single()
 
-    // Se o Supabase reclamar, devolvemos o objeto de erro INTEIRO para o frontend
-    if (error) {
-      return NextResponse.json({ error: error }, { status: 400 })
+    if (prodError) throw new Error(prodError.message)
+
+    // 3. Opcional: Se você usa tabela relacional 'produto_categoria', mantemos a inserção
+    if (categoriaSlugs && categoriaSlugs.length > 0) {
+      const catInserts = categoriaSlugs.map((slug: string) => ({
+        produto_id: produto.id,
+        categoria_slug: slug
+      }))
+      
+      const { error: catError } = await supabase
+        .from('produto_categoria')
+        .insert(catInserts)
+        
+      if (catError) console.error('[API PRODUTOS] Erro na tabela relacional:', catError.message)
     }
 
-    return NextResponse.json({ ok: true, data }, { status: 201 })
-
+    return NextResponse.json({ success: true, id: produto.id })
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    console.error('[API PRODUTOS ERROR]', error.message)
+    return NextResponse.json({ error: error.message || 'Erro ao criar produto.' }, { status: 500 })
   }
-});
-
-// GET mantido público para que a Home/Vitrine do site continue funcionando normalmente
-export async function GET() {
-  const { data, error } = await supabase
-    .from('produtos')
-    .select('*')
-    .order('createdAt', { ascending: false }) // Traz os mais novos primeiro
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
-  }
-  return NextResponse.json(data || [])
-}
+})

@@ -29,9 +29,9 @@ interface ProdutoRadar {
   status: StatusRadar
 }
 
-/** Delay aleatório entre 500ms e 1500ms para simular comportamento humano */
+/** Delay aleatório entre 2s e 5s para evitar Rate Limit e Bloqueios */
 function sleepAleatorio() {
-  const ms = Math.floor(Math.random() * 1000) + 500
+  const ms = Math.floor(Math.random() * 3000) + 2000
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
@@ -58,10 +58,12 @@ export default function RadarPage() {
   const [mostrarSoAlteracoes, setMostrarSoAlteracoes] = useState(false)
 
   useEffect(() => {
+    // 👇 ALTERAÇÃO 1: O menu dropdown agora SÓ mostra marketplaces que permitem o scraper
     supabase
       .from('marketplaces')
       .select('slug, nome')
       .eq('ativo', true)
+      .eq('scraper_ativo', true) 
       .then(({ data }) => { if (data) setMarketplaces(data) })
   }, [])
 
@@ -69,7 +71,6 @@ export default function RadarPage() {
     setResultados(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p))
   }
 
-  /** Raspa um único produto e atualiza a linha correspondente */
   const rasparProduto = useCallback(async (prod: ProdutoRadar) => {
     atualizarLinha(prod.id, { status: 'farejando' })
 
@@ -102,13 +103,40 @@ export default function RadarPage() {
     setResultados([])
     setMostrarSoAlteracoes(false)
 
-    let query = supabase.from('produtos').select('id, nome, lojaOrigem, loja, linkAfiliado, link_afiliado, preco, updatedAt')
+    // 👇 ALTERAÇÃO 2: Puxa primeiro a lista de lojas permitidas do banco
+    const { data: mktsPermitidos } = await supabase
+      .from('marketplaces')
+      .select('slug')
+      .eq('scraper_ativo', true)
+
+    if (!mktsPermitidos || mktsPermitidos.length === 0) {
+      alert('Nenhum marketplace permite varredura automática no momento.')
+      setVarrendo(false)
+      return
+    }
+    
+    // Transforma num array de strings (ex: ['amazon', 'magalu'])
+    const slugsPermitidos = mktsPermitidos.map(m => m.slug)
+
+    // 👇 ALTERAÇÃO 3: Filtra os produtos exigindo que a lojaOrigem esteja na lista de permitidos
+    let query = supabase
+      .from('produtos')
+      .select('id, nome, lojaOrigem, linkAfiliado, preco, createdAt')
+      .in('lojaOrigem', slugsPermitidos) 
+    
     if (filtroLoja) query = query.eq('lojaOrigem', filtroLoja)
 
-    const { data: prods } = await query
+    const { data: prods, error } = await query
+
+    if (error) {
+      console.error('[RADAR DB ERROR]', error)
+      alert(`Erro no banco de dados: ${error.message}\nVerifique o console.`)
+      setVarrendo(false)
+      return
+    }
 
     if (!prods || prods.length === 0) {
-      alert('Nenhum produto encontrado no banco para esta seleção.')
+      alert('Nenhum produto automático encontrado no banco para esta seleção.')
       setVarrendo(false)
       return
     }
@@ -116,10 +144,10 @@ export default function RadarPage() {
     const listaInicial: ProdutoRadar[] = prods.map(p => ({
       id: p.id,
       nome: p.nome,
-      loja: p.lojaOrigem || p.loja || 'Desconhecida',
-      link_afiliado: p.linkAfiliado || p.link_afiliado || '',
+      loja: p.lojaOrigem || 'Desconhecida',
+      link_afiliado: p.linkAfiliado || '',
       preco_banco: p.preco,
-      updatedAt: p.updatedAt,
+      updatedAt: p.createdAt, 
       preco_novo: null,
       status: 'aguardando',
     }))
@@ -186,7 +214,6 @@ export default function RadarPage() {
     }
   }
 
-  // Derivados para os contadores e filtros
   const qtdSucesso = resultados.filter(p => p.status === 'sucesso').length
   const qtdErro = resultados.filter(p => p.status === 'erro').length
   const qtdIgual = resultados.filter(p => p.status === 'igual').length
@@ -222,7 +249,6 @@ export default function RadarPage() {
       return <span className="text-gray-500 text-xs">= Sem mudança</span>
     }
 
-    // status === 'sucesso'
     const subiu = prod.preco_novo! > prod.preco_banco
     const desceu = prod.preco_novo! < prod.preco_banco
     const variacaoPct = Math.round(Math.abs((prod.preco_novo! - prod.preco_banco) / prod.preco_banco) * 100)
@@ -266,9 +292,9 @@ export default function RadarPage() {
             <Radar size={20} className="text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-black text-white tracking-tight">Radar de Preços</h1>
+            <h1 className="text-2xl font-black text-white tracking-tight">Radar Automático</h1>
             <p className="text-muted-foreground text-xs mt-0.5">
-              Selecione o alvo e inicie a varredura. O robô escaneia um produto por vez com delay aleatório.
+              Selecione o alvo e inicie a varredura. Exibindo apenas marketplaces configurados com Scraper Ativo.
             </p>
           </div>
         </div>
@@ -282,7 +308,7 @@ export default function RadarPage() {
             className="h-11 rounded-lg border border-[#2A2A35] bg-[#1A1A24] px-4 text-sm text-white font-bold focus:outline-none focus:ring-1 focus:ring-primary uppercase w-full sm:w-60"
             disabled={varrendo}
           >
-            <option value="">Todas as Lojas</option>
+            <option value="">Todas as Lojas Ativas</option>
             {marketplaces.map(mk => (
               <option key={mk.slug} value={mk.slug}>{mk.nome.toUpperCase()}</option>
             ))}
@@ -384,107 +410,102 @@ export default function RadarPage() {
           {/* TABELA */}
           {resultadosFiltrados.length > 0 && (
             <div className="bg-[#1A1A24] border border-[#2A2A35] rounded-2xl overflow-hidden shadow-lg">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left text-gray-300">
-                  <thead className="text-[10px] uppercase bg-[#0F0F13] text-gray-500 border-b border-[#2A2A35] font-black tracking-widest">
-                    <tr>
-                      <th className="px-5 py-3.5">Produto</th>
-                      <th className="px-4 py-3.5 text-center w-16">Status</th>
-                      <th className="px-5 py-3.5 text-right">Preço Cadastrado</th>
-                      <th className="px-5 py-3.5 text-right bg-primary/5">Preço Loja</th>
-                      <th className="px-4 py-3.5 text-center w-20">Ações</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {resultadosFiltrados.map(prod => (
-                      <tr key={prod.id} className={getRowStyle(prod)}>
-
-                        {/* NOME + LOJA */}
-                        <td className="px-5 py-3.5">
-                          <div className="flex flex-col min-w-0 max-w-sm gap-1">
-                            <a
-                              href={prod.link_afiliado}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="font-bold text-white hover:text-primary truncate text-sm leading-tight"
-                              title={prod.nome}
-                            >
-                              {prod.nome}
-                            </a>
-                            <span className="text-[10px] text-gray-500 uppercase font-bold tracking-wider w-fit bg-[#0F0F13] px-2 py-0.5 rounded border border-[#2A2A35]">
-                              {prod.loja}
-                            </span>
-                          </div>
-                        </td>
-
-                        {/* INDICADOR STATUS */}
-                        <td className="px-4 py-3.5 text-center">
-                          {prod.status === 'aguardando' && (
-                            <span className="w-2 h-2 rounded-full bg-gray-600 inline-block" title="Aguardando" />
-                          )}
-                          {prod.status === 'farejando' && (
-                            <span className="w-2 h-2 rounded-full bg-primary animate-ping inline-block" title="Farejando" />
-                          )}
-                          {prod.status === 'sucesso' && (
-                            <span className="w-2 h-2 rounded-full bg-[#22C55E] inline-block shadow-[0_0_8px_rgba(34,197,94,0.8)]" title="Sucesso" />
-                          )}
-                          {prod.status === 'igual' && (
-                            <span className="w-2 h-2 rounded-full bg-gray-500 inline-block" title="Sem mudança" />
-                          )}
-                          {prod.status === 'erro' && (
-                            <span className="w-2 h-2 rounded-full bg-red-500 inline-block shadow-[0_0_8px_rgba(239,68,68,0.7)]" title="Erro" />
-                          )}
-                        </td>
-
-                        {/* PREÇO BANCO */}
-                        <td className="px-5 py-3.5 text-right">
-                          <span
-                            className="font-mono text-gray-400 text-sm cursor-help"
-                            title={tempoDesdeAtualizacao(prod.updatedAt)}
-                          >
-                            {formatarPreco(prod.preco_banco)}
-                          </span>
-                          {prod.updatedAt && (
-                            <div className="text-[10px] text-gray-600 mt-0.5">
-                              {tempoDesdeAtualizacao(prod.updatedAt)}
-                            </div>
-                          )}
-                        </td>
-
-                        {/* PREÇO NOVO */}
-                        <td className="px-5 py-3.5 text-right bg-primary/5">
-                          {renderCelulaNovo(prod)}
-                        </td>
-
-                        {/* AÇÕES */}
-                        <td className="px-4 py-3.5">
-                          <div className="flex items-center justify-center gap-1">
-                            {prod.status === 'erro' && (
-                              <button
-                                type="button"
-                                onClick={() => rasparProduto(prod)}
-                                title="Tentar novamente"
-                                className="text-gray-500 hover:text-primary hover:bg-primary/10 p-1.5 rounded-lg transition-colors"
-                              >
-                                <RefreshCw size={13} />
-                              </button>
-                            )}
-                            <button
-                              type="button"
-                              onClick={() => excluirProduto(prod.id, prod.nome)}
-                              title="Excluir produto"
-                              className="text-gray-500 hover:text-red-500 hover:bg-red-500/10 p-1.5 rounded-lg transition-colors"
-                            >
-                              <Trash2 size={13} />
-                            </button>
-                          </div>
-                        </td>
-
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="overflow-x-auto pb-4">
+  <table className="w-full text-sm text-left text-gray-300 min-w-[600px] sm:min-w-full">
+    <thead className="text-[10px] uppercase bg-[#0F0F13] text-gray-500 border-b border-[#2A2A35] font-black tracking-widest">
+      <tr>
+        <th className="px-4 sm:px-5 py-3.5 w-1/2 sm:w-auto">Produto</th>
+        <th className="px-2 sm:px-4 py-3.5 text-center w-12 sm:w-16 hidden sm:table-cell">Status</th>
+        <th className="px-3 sm:px-5 py-3.5 text-right">Cadastrado</th>
+        <th className="px-3 sm:px-5 py-3.5 text-right bg-primary/5">Atual</th>
+        <th className="px-2 sm:px-4 py-3.5 text-center w-16 sm:w-20">Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      {resultadosFiltrados.map(prod => (
+        <tr key={prod.id} className={getRowStyle(prod)}>
+          {/* NOME + LOJA */}
+          <td className="px-4 sm:px-5 py-3.5">
+            <div className="flex flex-col min-w-[150px] max-w-[200px] sm:max-w-sm gap-1">
+              <a
+                href={prod.link_afiliado}
+                target="_blank"
+                rel="noreferrer"
+                className="font-bold text-white hover:text-primary truncate text-sm leading-tight"
+                title={prod.nome}
+              >
+                {prod.nome}
+              </a>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-[10px] text-gray-500 uppercase font-bold tracking-wider w-fit bg-[#0F0F13] px-2 py-0.5 rounded border border-[#2A2A35]">
+                  {prod.loja}
+                </span>
+                {/* Status indicator moved here for Mobile */}
+                <span className="sm:hidden flex items-center">
+                  {prod.status === 'farejando' && <span className="w-2 h-2 rounded-full bg-primary animate-ping" />}
+                  {prod.status === 'sucesso' && <span className="w-2 h-2 rounded-full bg-[#22C55E]" />}
+                  {prod.status === 'erro' && <span className="w-2 h-2 rounded-full bg-red-500" />}
+                </span>
               </div>
+            </div>
+          </td>
+
+          {/* INDICADOR STATUS DESKTOP */}
+          <td className="px-2 sm:px-4 py-3.5 text-center hidden sm:table-cell">
+            {prod.status === 'aguardando' && <span className="w-2 h-2 rounded-full bg-gray-600 inline-block" />}
+            {prod.status === 'farejando' && <span className="w-2 h-2 rounded-full bg-primary animate-ping inline-block" />}
+            {prod.status === 'sucesso' && <span className="w-2 h-2 rounded-full bg-[#22C55E] inline-block shadow-[0_0_8px_rgba(34,197,94,0.8)]" />}
+            {prod.status === 'igual' && <span className="w-2 h-2 rounded-full bg-gray-500 inline-block" />}
+            {prod.status === 'erro' && <span className="w-2 h-2 rounded-full bg-red-500 inline-block shadow-[0_0_8px_rgba(239,68,68,0.7)]" />}
+          </td>
+
+          {/* PREÇO BANCO */}
+          <td className="px-3 sm:px-5 py-3.5 text-right align-middle">
+            <div className="flex flex-col items-end justify-center">
+              <span className="font-mono text-gray-400 text-xs sm:text-sm">{formatarPreco(prod.preco_banco)}</span>
+              {prod.updatedAt && (
+                <span className="text-[9px] sm:text-[10px] text-gray-600 mt-0.5 whitespace-nowrap">
+                  {tempoDesdeAtualizacao(prod.updatedAt)}
+                </span>
+              )}
+            </div>
+          </td>
+
+          {/* PREÇO NOVO */}
+          <td className="px-3 sm:px-5 py-3.5 text-right bg-primary/5 align-middle">
+            {renderCelulaNovo(prod)}
+          </td>
+
+          {/* AÇÕES */}
+<td className="px-2 sm:px-4 py-3.5 align-middle">
+  <div className="flex items-center justify-center gap-1">
+    {prod.status === 'erro' && (
+      <button 
+        type="button" 
+        onClick={() => rasparProduto(prod)} 
+        title="Tentar extrair preço novamente"
+        aria-label={`Tentar novamente: ${prod.nome}`}
+        className="text-gray-500 hover:text-primary hover:bg-primary/10 p-1.5 rounded-lg transition-colors"
+      >
+        <RefreshCw size={14} aria-hidden="true" />
+      </button>
+    )}
+              <button 
+                type="button" 
+                onClick={() => excluirProduto(prod.id, prod.nome)} 
+                title="Excluir produto do banco"
+                aria-label={`Excluir produto: ${prod.nome}`}
+                className="text-gray-500 hover:text-red-500 hover:bg-red-500/10 p-1.5 rounded-lg transition-colors"
+              >
+                <Trash2 size={14} aria-hidden="true" />
+              </button>
+            </div>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
             </div>
           )}
 

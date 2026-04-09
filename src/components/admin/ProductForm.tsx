@@ -215,7 +215,7 @@ export default function ProductForm({ categorias = [], produto, onSave, onCancel
     
     setLoading(true)
 
-    const novoProduto: any = {
+  const novoProduto: any = {
       id: produto?.id ?? `prod-${Date.now()}`,
       nome: nomeLimpo,
       preco: precoNum,
@@ -223,8 +223,7 @@ export default function ProductForm({ categorias = [], produto, onSave, onCancel
       desconto_pct: desconto ? parseInt(desconto) : undefined,
       imagem: imagemLimpa || '',
       link_afiliado: linkLimpo,
-      loja: loja, 
-      lojaOrigem: loja,
+      lojaOrigem: loja, // <-- Mantemos exclusivamente o padrão definido no DB
       tags: tags.length > 0 ? tags : undefined,
       destaque,
       novo,

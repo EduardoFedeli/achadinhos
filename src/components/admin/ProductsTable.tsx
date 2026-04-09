@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
@@ -12,11 +12,13 @@ import ProductForm from './ProductForm'
 import type { Produto, Categoria } from '@/types'
 import { formatarPreco } from '@/lib/produtos'
 
-
-interface ProdutoComCategoria extends Produto {
+// Substitua o bloco da interface ProdutoComCategoria (linhas 15 a 21) por este:
+interface ProdutoComCategoria extends Omit<Produto, 'loja' | 'lojaOrigem'> {
   categoriaSlug: string
   categoriaSlugs?: string[] 
   categoriaNome: string
+  lojaOrigem?: string | null
+  loja?: string | null
 }
 
 interface ProductsTableProps {
@@ -29,11 +31,13 @@ export default function ProductsTable({ produtos, categorias }: ProductsTablePro
   const [inputBusca, setInputBusca] = useState('')
   const [inputCat, setInputCat] = useState('')
   const [inputStatus, setInputStatus] = useState('')
+  const [inputLoja, setInputLoja] = useState('') // Novo Rascunho
 
   // Estados Oficiais 
   const [busca, setBusca] = useState('')
   const [filtroCategoria, setFiltroCategoria] = useState('')
   const [filtroStatus, setFiltroStatus] = useState('') 
+  const [filtroLoja, setFiltroLoja] = useState('') // Novo Filtro Oficial
 
   const [editando, setEditando] = useState<ProdutoComCategoria | null>(null)
   const [adicionando, setAdicionando] = useState(false)
@@ -41,17 +45,27 @@ export default function ProductsTable({ produtos, categorias }: ProductsTablePro
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [isProcessingBulk, setIsProcessingBulk] = useState(false)
   const [paginaAtual, setPaginaAtual] = useState(1)
-  
-  // 👇 NOVO: Controle dinâmico de itens por página (Padrão 10)
   const [itensPorPagina, setItensPorPagina] = useState(10)
   
   const router = useRouter()
   const produtosUnicos = Array.from(new Map(produtos.map(p => [p.id, p])).values())
 
+  // Derivar lojas únicas dinamicamente a partir dos produtos já carregados
+  
+  const lojasDisponiveis = useMemo(() => {
+    const lojas = new Set<string>();
+    produtosUnicos.forEach(p => {
+      const lojaNome = p.lojaOrigem || p.loja;
+      if (lojaNome) lojas.add(lojaNome.toLowerCase());
+    });
+    return Array.from(lojas).sort();
+  }, [produtosUnicos]);
+
   const aplicarFiltros = () => {
     setBusca(inputBusca)
     setFiltroCategoria(inputCat)
     setFiltroStatus(inputStatus)
+    setFiltroLoja(inputLoja) // Aplica o filtro de loja
     setPaginaAtual(1)
   }
 
@@ -64,8 +78,12 @@ export default function ProductsTable({ produtos, categorias }: ProductsTablePro
       filtroStatus === '' ? true :
       filtroStatus === 'destaque' ? p.destaque :
       filtroStatus === 'novo' ? p.novo : true
+    
+    // Novo Matcher de Loja
+    const pLoja = (p.lojaOrigem || p.loja || '').toLowerCase();
+    const matchLoja = !filtroLoja || pLoja === filtroLoja.toLowerCase()
 
-    return matchBusca && matchCat && matchStatus
+    return matchBusca && matchCat && matchStatus && matchLoja
   })
 
   const totalPaginas = Math.ceil(filtered.length / itensPorPagina)
@@ -134,24 +152,37 @@ export default function ProductsTable({ produtos, categorias }: ProductsTablePro
             value={inputBusca} 
             onChange={e => setInputBusca(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && aplicarFiltros()}
-            className="w-full md:w-48 h-8 text-xs bg-[#0F0F13] border-[#2A2A35]" 
+            className="w-full md:w-40 h-8 text-xs bg-[#0F0F13] border-[#2A2A35]" 
           />
           
           <select
             aria-label="Filtrar por categoria"
             value={inputCat}
             onChange={e => setInputCat(e.target.value)}
-            className="h-8 w-full md:w-36 rounded-md border border-[#2A2A35] bg-[#0F0F13] px-2 text-xs text-[#8E8E9F] outline-none"
+            className="h-8 w-full md:w-32 rounded-md border border-[#2A2A35] bg-[#0F0F13] px-2 text-xs text-[#8E8E9F] outline-none"
           >
             <option value="">Todas Categorias</option>
             {categorias.map(c => <option key={c.slug} value={c.slug}>{c.nome}</option>)}
+          </select>
+
+          {/* 👇 NOVO: Select de Lojas Derivadas */}
+          <select
+            aria-label="Filtrar por loja"
+            value={inputLoja}
+            onChange={e => setInputLoja(e.target.value)}
+            className="h-8 w-full md:w-32 rounded-md border border-[#2A2A35] bg-[#0F0F13] px-2 text-xs text-[#8E8E9F] outline-none uppercase"
+          >
+            <option value="">Todas Lojas</option>
+            {lojasDisponiveis.map(loja => (
+              <option key={loja} value={loja}>{loja}</option>
+            ))}
           </select>
 
           <select
             aria-label="Filtrar por status"
             value={inputStatus}
             onChange={e => setInputStatus(e.target.value)}
-            className="h-8 w-full md:w-32 rounded-md border border-[#2A2A35] bg-[#0F0F13] px-2 text-xs text-[#8E8E9F] outline-none"
+            className="h-8 w-full md:w-28 rounded-md border border-[#2A2A35] bg-[#0F0F13] px-2 text-xs text-[#8E8E9F] outline-none"
           >
             <option value="">Todos Status</option>
             <option value="destaque">Destaques</option>
@@ -174,7 +205,6 @@ export default function ProductsTable({ produtos, categorias }: ProductsTablePro
           <Table>
             <TableHeader className="bg-[#0F0F13]/50">
               <TableRow className="border-[#2A2A35]">
-                {/* 👇 Ajuste de padding: de py-2 para py-3 nas th e td */}
                 <TableHead className="w-10 text-center py-3 px-2">
                   <input 
                     type="checkbox" checked={isAllSelected} onChange={toggleSelectAll}
@@ -185,6 +215,7 @@ export default function ProductsTable({ produtos, categorias }: ProductsTablePro
                 <TableHead className="w-12 py-3 px-2 text-xs font-semibold text-[#8E8E9F]">Img</TableHead>
                 <TableHead className="py-3 px-2 text-xs font-semibold text-[#8E8E9F]">Nome do Produto</TableHead>
                 <TableHead className="py-3 px-2 text-xs font-semibold text-[#8E8E9F]">Categoria</TableHead>
+                <TableHead className="py-3 px-2 text-xs font-semibold text-[#8E8E9F]">Loja</TableHead>
                 <TableHead className="py-3 px-2 text-xs font-semibold text-[#8E8E9F]">Preço</TableHead>
                 <TableHead className="text-center py-3 px-2 text-xs font-semibold text-[#8E8E9F]">Status</TableHead>
                 <TableHead className="text-right py-3 px-2 text-xs font-semibold text-[#8E8E9F] pr-4">Ações</TableHead>
@@ -194,6 +225,7 @@ export default function ProductsTable({ produtos, categorias }: ProductsTablePro
               {paginatedProdutos.map(p => {
                 const isSelected = selectedIds.includes(p.id)
                 const categoriasCount = p.categoriaSlugs?.length || 1;
+                const lojaDisplay = p.lojaOrigem || p.loja || '—';
                 
                 return (
                   <TableRow key={p.id} className={`border-[#2A2A35] transition-all group ${isSelected ? 'bg-[#22C55E]/10' : 'hover:bg-[#0F0F13]/40'}`}>
@@ -214,12 +246,18 @@ export default function ProductsTable({ produtos, categorias }: ProductsTablePro
                       )}
                     </TableCell>
                     <TableCell className="py-3 px-2">
-                      <p className="text-xs font-bold text-white line-clamp-1 max-w-[250px]">{p.nome}</p>
+                      <p className="text-xs font-bold text-white line-clamp-1 max-w-[200px]">{p.nome}</p>
                     </TableCell>
                     <TableCell className="py-3 px-2">
                       <Badge variant="outline" className="border-[#2A2A35] text-[#8E8E9F] bg-[#0F0F13] text-[10px] py-0 h-5">
                         {p.categoriaNome} {categoriasCount > 1 ? `+${categoriasCount - 1}` : ''}
                       </Badge>
+                    </TableCell>
+                    
+                    <TableCell className="py-3 px-2">
+                      <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest bg-[#0F0F13] px-2 py-0.5 rounded border border-[#2A2A35]">
+                         {lojaDisplay}
+                      </span>
                     </TableCell>
                     <TableCell className="py-3 px-2 text-xs font-black text-[#22C55E]">
                       {formatarPreco(p.preco)}
@@ -233,11 +271,11 @@ export default function ProductsTable({ produtos, categorias }: ProductsTablePro
                     </TableCell>
                     <TableCell className="text-right py-3 px-2 pr-4">
                       <div className="flex justify-end gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
-                        <Button size="icon" variant="ghost" onClick={() => setEditando(p)} className="h-6 w-6 text-[#8E8E9F] hover:text-white hover:bg-[#2A2A35]">
-                          <Edit2 size={12} />
+                        <Button size="icon" variant="ghost" onClick={() => setEditando(p)} aria-label="Editar" className="h-6 w-6 text-[#8E8E9F] hover:text-white hover:bg-[#2A2A35]">
+                          <Edit2 size={12} aria-hidden="true" />
                         </Button>
-                        <Button size="icon" variant="ghost" onClick={() => handleDelete(p.id)} className="h-6 w-6 text-[#8E8E9F] hover:text-[#FF3838] hover:bg-[#FF3838]/10">
-                          <Trash2 size={12} />
+                        <Button size="icon" variant="ghost" onClick={() => handleDelete(p.id)} aria-label="Excluir" className="h-6 w-6 text-[#8E8E9F] hover:text-[#FF3838] hover:bg-[#FF3838]/10">
+                          <Trash2 size={12} aria-hidden="true" />
                         </Button>
                       </div>
                     </TableCell>
@@ -246,23 +284,20 @@ export default function ProductsTable({ produtos, categorias }: ProductsTablePro
               })}
               {paginatedProdutos.length === 0 && (
                 <TableRow className="border-[#2A2A35]">
-                  <TableCell colSpan={7} className="h-24 text-center text-xs text-[#8E8E9F]">Nenhum produto encontrado.</TableCell>
+                  <TableCell colSpan={8} className="h-24 text-center text-xs text-[#8E8E9F]">Nenhum produto encontrado.</TableCell>
                 </TableRow>
               )}
             </TableBody>
           </Table>
         </div>
         
-        {/* 👇 PAGINAÇÃO COM SELETOR DE ITENS */}
+        {/* PAGINAÇÃO COM SELETOR DE ITENS */}
         {filtered.length > 0 && (
           <div className="flex flex-col sm:flex-row items-center justify-between px-3 py-3 border-t border-[#2A2A35] bg-[#0F0F13] gap-4">
-            
-            {/* Bloco Esquerdo: Info de Exibição e Select */}
             <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-start">
               <div className="text-[11px] text-[#8E8E9F]">
                 Exibindo <span className="font-bold text-white">{(paginaAtual - 1) * itensPorPagina + 1}</span> - <span className="font-bold text-white">{Math.min(paginaAtual * itensPorPagina, filtered.length)}</span> de <span className="font-bold text-white">{filtered.length}</span>
               </div>
-              
               <div className="flex items-center gap-2">
                 <span className="text-[11px] text-[#8E8E9F]">Por página:</span>
                 <select
@@ -270,7 +305,7 @@ export default function ProductsTable({ produtos, categorias }: ProductsTablePro
                   value={itensPorPagina}
                   onChange={(e) => {
                     setItensPorPagina(Number(e.target.value))
-                    setPaginaAtual(1) // Reseta a página ao mudar o limite
+                    setPaginaAtual(1)
                   }}
                   className="bg-[#1A1A24] text-white font-bold text-[11px] border border-[#2A2A35] rounded px-1.5 py-1 outline-none focus:border-[#3B82F6] cursor-pointer"
                 >
@@ -284,7 +319,6 @@ export default function ProductsTable({ produtos, categorias }: ProductsTablePro
               </div>
             </div>
 
-            {/* Bloco Direito: Botões de navegação (só exibe se tiver mais de 1 página) */}
             {totalPaginas > 1 && (
               <div className="flex gap-1 w-full sm:w-auto justify-between sm:justify-end">
                 <Button variant="ghost" size="sm" onClick={() => setPaginaAtual(p => Math.max(1, p - 1))} disabled={paginaAtual === 1} className="h-6 text-[11px] text-[#8E8E9F] hover:text-white">
@@ -306,11 +340,11 @@ export default function ProductsTable({ produtos, categorias }: ProductsTablePro
           <span className="text-[11px] font-black text-white px-2">{selectedIds.length} Itens</span>
           <div className="h-4 w-px bg-[#2A2A35]"></div>
           <Button size="sm" variant="destructive" onClick={() => handleBulkAction('delete')} disabled={isProcessingBulk} className="h-7 text-[11px] px-3 font-bold bg-[#FF3838] hover:bg-[#FF3838]/80 text-white">
-            <Trash2 size={12} className={`mr-1 ${isProcessingBulk ? "animate-pulse" : ""}`} /> 
+            <Trash2 size={12} aria-hidden="true" className={`mr-1 ${isProcessingBulk ? "animate-pulse" : ""}`} /> 
             {isProcessingBulk ? "Apagando..." : "Excluir Definitivo"}
           </Button>
           <div className="h-4 w-px bg-[#2A2A35]"></div>
-          <button type="button" aria-label="Limpar seleção" className="text-[#8E8E9F] hover:text-white transition-colors" onClick={() => setSelectedIds([])}><X size={14} /></button>
+          <button type="button" aria-label="Limpar seleção" className="text-[#8E8E9F] hover:text-white transition-colors" onClick={() => setSelectedIds([])}><X size={14} aria-hidden="true" /></button>
         </div>
       )}
 
@@ -319,7 +353,6 @@ export default function ProductsTable({ produtos, categorias }: ProductsTablePro
         <DialogContent className="sm:max-w-[1000px] w-[95vw] max-h-[95vh] overflow-y-auto bg-[#0F0F13] border-[#2A2A35] text-foreground p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle className="text-xl font-black mb-2 text-white">Editar produto</DialogTitle>
-            {/* 👇 Adicione esta linha para calar o aviso do terminal */}
             <DialogDescription className="hidden">Formulário de edição de produto</DialogDescription>
           </DialogHeader>
           {editando && <ProductForm categorias={categorias} produto={editando as any} onSave={handleSaved} onCancel={() => setEditando(null)} />}
@@ -330,7 +363,6 @@ export default function ProductsTable({ produtos, categorias }: ProductsTablePro
         <DialogContent className="sm:max-w-[1000px] w-[95vw] max-h-[95vh] overflow-y-auto bg-[#0F0F13] border-[#2A2A35] text-foreground p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle className="text-xl font-black mb-2 text-white">Adicionar produto</DialogTitle>
-            {/* 👇 Adicione esta linha para calar o aviso do terminal */}
             <DialogDescription className="hidden">Formulário de adição de produto</DialogDescription>
           </DialogHeader>
           <ProductForm categorias={categorias} onSave={handleSaved} onCancel={() => setAdicionando(false)} />

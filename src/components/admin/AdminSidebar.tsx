@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Package, FolderTree, Radar, Store, AlertTriangle } from 'lucide-react'
+import { LayoutDashboard, Package, FolderTree, Radar, Store, AlertTriangle, Beaker, Bot } from 'lucide-react'
 import AdminLogoutButton from '@/components/admin/AdminLogoutButton'
 
 export default function AdminSidebar() {
@@ -13,8 +13,9 @@ export default function AdminSidebar() {
     { name: 'Produtos', href: '/admin/dashboard/produtos', icon: Package },
     { name: 'Categorias', href: '/admin/dashboard/categorias', icon: FolderTree },
     { name: 'Marketplaces', href: '/admin/dashboard/marketplaces', icon: Store },
-    { name: 'Radar T-Hex', href: '/admin/dashboard/radar', icon: Radar },
-    // 👇 Nova linha da Auditoria adicionada aqui:
+    { name: 'Laboratório', href: '/admin/dashboard/laboratorio', icon: Beaker },
+    { name: 'Radar Automático', href: '/admin/dashboard/radar', icon: Radar },
+    { name: 'Fila de Revisão', href: '/admin/dashboard/revisao', icon: Bot },
     { name: 'Auditoria (+90d)', href: '/admin/dashboard/auditoria', icon: AlertTriangle },
   ]
 
@@ -25,7 +26,7 @@ export default function AdminSidebar() {
         <span className="text-primary font-bold">T-Hex</span> Indica
       </Link>
 
-      <nav className="flex flex-col gap-2 flex-1">
+      <nav className="flex flex-col gap-2 flex-1 overflow-y-auto">
         {navItems.map((item) => {
           const isActive = pathname === item.href
           const Icon = item.icon
