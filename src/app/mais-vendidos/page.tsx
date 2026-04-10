@@ -44,7 +44,7 @@ export default async function MaisVendidosPage() {
   const totalProdutos = produtosAll.length
 
   return (
-    <div className="min-h-screen bg-[#0F0F13] flex flex-col pb-20">
+    <div className=" flex flex-col pb-20">
       <Header />
 
       <main className="w-full max-w-7xl mx-auto px-4 md:px-8 mt-8 space-y-12">

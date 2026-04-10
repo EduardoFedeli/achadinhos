@@ -30,7 +30,8 @@ export default async function NovidadesPage() {
   const tagsPresentes = [...new Set(produtosIniciais.flatMap((p: any) => p.tags || []))].sort() as string[]
 
   return (
-    <div className="min-h-screen bg-[#0F0F13] flex flex-col pb-20">
+    // REMOVIDO: O 'bg-[#0F0F13]' e o 'min-h-screen' que cobriam o layout global
+    <div className="flex flex-col pb-20">
       <Header />
       <CategoriaContent
         slug="novidades"
@@ -39,7 +40,7 @@ export default async function NovidadesPage() {
         produtosIniciais={produtosIniciais}
         marketplacesDisponiveis={lojasPresentes}
         tagsDaCategoria={tagsPresentes}
-        opcoesOcultasOrdenacao={['novidades']} // <-- Esta linha faz a mágica acontecer!
+        opcoesOcultasOrdenacao={['novidades']}
       />
     </div>
   )

@@ -76,13 +76,9 @@ export default function HomePage() {
   const getCat = (slug: string) => categoriasRaw.find((c: Categoria) => c.slug === slug) || categoriasRaw[0]
 
   return (
-    <div className="min-h-screen bg-[#0F0F13] relative flex flex-col pb-20 overflow-hidden">
-      
-      {/* ── BACKGROUND EFEITOS ── */}
-      <div className="absolute inset-0 z-0 h-full w-full bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none"></div>
-      <div className="absolute left-0 right-0 top-0 -z-10 m-auto h-[400px] w-[600px] rounded-full bg-[#22C55E] opacity-[0.03] blur-[120px] pointer-events-none"></div>
+    <div className="min-h-screen flex flex-col pb-20 overflow-hidden">
 
-      <div className="relative z-10">
+      <div>
         <Header />
 
         <main className="w-full max-w-7xl mx-auto px-4 md:px-8 space-y-12 md:space-y-16 mt-6 md:mt-10">

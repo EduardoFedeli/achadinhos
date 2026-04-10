@@ -29,7 +29,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
   const tagsPresentes = [...new Set(produtosIniciais.flatMap(p => p.tags || []))].sort()
 
   return (
-    <div className="min-h-screen bg-[#0F0F13] flex flex-col pb-20">
+    <div className=" flex flex-col pb-20">
       <Header />
       <CategoriaContent 
         slug={slug}

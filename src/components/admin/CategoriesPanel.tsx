@@ -9,7 +9,7 @@ import CategoryFormModal from './CategoryFormModal'
 
 interface CategoriaComQuantidade extends Categoria {
   quantidade: number
-  imagem_url?: string // 👈 Avisamos o TypeScript que a imagem pode existir!
+  imagem_url?: string
 }
 
 interface CategoriesPanelProps {
@@ -36,9 +36,19 @@ export default function CategoriesPanel({ categorias }: CategoriesPanelProps) {
     setIsModalOpen(true)
   }
 
+  // Gera as classes dinâmicas para as cores sem usar style inline
+  const dynamicStyles = categoriasFiltradas.map(cat => `
+    .cat-card-${cat.slug}:hover { border-color: ${cat.cor}; box-shadow: 0 0 20px ${cat.cor}30; }
+    .cat-line-${cat.slug} { background-color: ${cat.cor}; }
+    .group:hover .cat-text-${cat.slug} { color: ${cat.cor}; }
+    .cat-badge-${cat.slug} { background-color: ${cat.cor}15; color: ${cat.cor}; border: 1px solid ${cat.cor}30; }
+  `).join('\n')
+
   return (
     <div className="flex flex-col gap-5 h-full">
-      {/* CABEÇALHO (Tamanho Intermediário) */}
+      <style dangerouslySetInnerHTML={{ __html: dynamicStyles }} />
+
+      {/* CABEÇALHO */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-[#1A1A24] p-5 rounded-xl border border-[#2A2A35]">
         <div>
           <h1 className="text-2xl font-black text-white tracking-tight">Categorias ({categorias.length})</h1>
@@ -61,20 +71,15 @@ export default function CategoriesPanel({ categorias }: CategoriesPanelProps) {
         </div>
       </div>
 
-      {/* GRID (Médio, mais confortável de ler) */}
+      {/* GRID */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {categoriasFiltradas.map(cat => (
           <div 
             key={cat.slug} 
-            // Truque de CSS Avançado para cor dinâmica no hover
-            style={{ 
-              '--cat-color': cat.cor, 
-              '--cat-glow': `${cat.cor}30` 
-            } as React.CSSProperties}
-            className="group relative bg-[#1A1A24] border border-[#2A2A35] rounded-xl p-4 pl-5 flex flex-col gap-4 transition-all duration-300 hover:border-[var(--cat-color)] hover:shadow-[0_0_20px_var(--cat-glow)]"
+            className={`cat-card-${cat.slug} group relative bg-[#1A1A24] border border-[#2A2A35] rounded-xl p-4 pl-5 flex flex-col gap-4 transition-all duration-300`}
           >
             {/* Linha colorida lateral */}
-            <div className="absolute left-0 top-4 bottom-4 w-1.5 rounded-r-md" style={{ backgroundColor: cat.cor }} />
+            <div className={`cat-line-${cat.slug} absolute left-0 top-4 bottom-4 w-1.5 rounded-r-md`} />
 
             {/* Topo do Card */}
             <div className="flex items-center justify-between gap-3">
@@ -87,22 +92,21 @@ export default function CategoriesPanel({ categorias }: CategoriesPanelProps) {
                   )}
                 </div>
                 <div className="flex flex-col min-w-0">
-                  <h3 className="text-base font-bold text-white truncate leading-tight group-hover:text-[var(--cat-color)] transition-colors">{cat.nome}</h3>
+                  <h3 className={`cat-text-${cat.slug} text-base font-bold text-white truncate leading-tight transition-colors`}>{cat.nome}</h3>
                   <p className="text-xs text-gray-500 truncate mt-0.5">/{cat.slug}</p>
                 </div>
               </div>
               
               {/* Badge de Contagem */}
               <span 
-                className="px-2.5 py-1 rounded-full text-xs font-black shrink-0" 
-                style={{ backgroundColor: `${cat.cor}15`, color: cat.cor, border: `1px solid ${cat.cor}30` }}
+                className={`cat-badge-${cat.slug} px-2.5 py-1 rounded-full text-xs font-black shrink-0`}
                 title="Produtos Vinculados"
               >
                 {cat.quantidade}
               </span>
             </div>
 
-            {/* Ações (Mais fáceis de clicar) */}
+            {/* Ações */}
             <div className="grid grid-cols-2 gap-2 mt-auto">
               <Button 
                 variant="outline" 

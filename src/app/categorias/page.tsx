@@ -11,7 +11,7 @@ export default async function CategoriasPage() {
   const categorias = [...categoriasRaw].sort((a, b) => a.nome.localeCompare(b.nome))
 
   return (
-    <div className="min-h-screen bg-[#0F0F13] relative flex flex-col pb-24 overflow-hidden">
+    <div className="relative flex flex-col pb-24 overflow-hidden">
       
       {/* Background Padrão (Mantendo a identidade da Home) */}
       <div className="absolute inset-0 z-0 h-full w-full bg-[linear-gradient(to_right,#ffffff0a_1px,transparent_1px),linear-gradient(to_bottom,#ffffff0a_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none"></div>

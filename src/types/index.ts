@@ -9,6 +9,7 @@ export interface Produto {
   imagem: string;
   link_afiliado: string;
   loja: string;
+  lojaOrigem?: string; // 👈 AQUI ESTÁ! O TypeScript agora sabe que isso existe.
   tags?: string[];
   destaque?: boolean;
   novo?: boolean;

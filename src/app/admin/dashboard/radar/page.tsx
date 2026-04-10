@@ -327,11 +327,11 @@ export default function RadarPage() {
         {/* BARRA DE PROGRESSO */}
         {(varrendo || varreduraConcluida) && resultados.length > 0 && (
           <div className="mt-3 space-y-1.5">
+            <style dangerouslySetInnerHTML={{ __html: `
+              .radar-progress-fill { width: ${((resultados.length - qtdFarejando) / resultados.length) * 100}%; }
+            `}} />
             <div className="w-full bg-[#0F0F13] rounded-full h-1.5 border border-[#2A2A35] overflow-hidden">
-              <div
-                className="h-full bg-primary rounded-full transition-all duration-500 w-[var(--radar-progress)]"
-                style={{ '--radar-progress': `${((resultados.length - qtdFarejando) / resultados.length) * 100}%` } as React.CSSProperties}
-              />
+              <div className="h-full bg-primary rounded-full transition-all duration-500 radar-progress-fill" />
             </div>
             <div className="flex gap-4 text-[11px] font-bold">
               <span className="text-[#22C55E]">{qtdSucesso} alterados</span>
