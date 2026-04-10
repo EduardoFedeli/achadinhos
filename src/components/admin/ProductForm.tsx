@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
+import { toast } from 'sonner' // <-- Nova importação de UX
 import type { Produto, Categoria, Loja } from '@/types'
 import { createClient } from '@supabase/supabase-js'
 
@@ -130,7 +131,7 @@ export default function ProductForm({ categorias = [], produto, onSave, onCancel
 
   async function handleExtrairDados() {
     if (!linkAfiliado) {
-      alert('Cole um link primeiro!')
+      toast.warning('Cole um link primeiro!')
       return
     }
 
@@ -147,7 +148,9 @@ export default function ProductForm({ categorias = [], produto, onSave, onCancel
     }
 
     if (!lojaDetectada) {
-      alert('Atenção: O link não bateu com nenhuma loja ativa. Selecione a loja manualmente se quiser continuar.')
+      toast.info('Atenção', {
+        description: 'O link não bateu com nenhuma loja ativa. Selecione a loja manualmente.'
+      })
     }
 
     setIsExtracting(true)
@@ -174,16 +177,19 @@ export default function ProductForm({ categorias = [], produto, onSave, onCancel
             setPrecoOriginal('')
             setDesconto('')
           }
+          toast.success('Dados extraídos com sucesso!')
         } else {
            if (lojaDetectada !== 'amazon' && lojaDetectada !== 'mercadolivre') {
-             alert(`Título e Imagem extraídos via Modo Universal! Digite o preço manualmente para a loja: ${lojaDetectada.toUpperCase()}`)
+             toast.success('Extração Universal', {
+               description: `Título e Imagem extraídos! Digite o preço manualmente para a loja: ${lojaDetectada.toUpperCase()}`
+             })
            }
         }
       } else {
-        alert(`Erro do T-Hex: ${data.error}`)
+        toast.error('Erro do T-Hex', { description: data.error })
       }
     } catch (error) {
-      alert('Falha na comunicação com o robô caçador.')
+      toast.error('Falha de Comunicação', { description: 'Não foi possível conectar ao robô caçador.' })
     } finally {
       setIsExtracting(false)
     }
@@ -199,35 +205,40 @@ export default function ProductForm({ categorias = [], produto, onSave, onCancel
     const precoOriginalNum = precoOriginal ? parseFloat(precoOriginal) : undefined
 
     if (selectedCategorias.length === 0) {
-      alert('Selecione ao menos uma categoria.')
+      toast.warning('Atenção', { description: 'Selecione ao menos uma categoria.' })
       return
     }
 
     if (precoOriginalNum && precoNum >= precoOriginalNum) {
-      alert('O Preço Original deve ser MAIOR que o Preço Atual.')
+      toast.warning('Preço Inválido', { description: 'O Preço Original deve ser MAIOR que o Preço Atual.' })
       return
     }
 
     if (linkLimpo && !linkLimpo.startsWith('http')) {
-      alert('O link de afiliado precisa começar com http:// ou https://')
+      toast.warning('Link Inválido', { description: 'O link de afiliado precisa começar com http:// ou https://' })
       return
     }
     
     setLoading(true)
 
-  const novoProduto: any = {
-      id: produto?.id ?? `prod-${Date.now()}`,
+    // CORREÇÃO CRÍTICA: Sem ID fake para o Supabase gerar o UUID nativo via db.
+    const novoProduto: any = {
       nome: nomeLimpo,
       preco: precoNum,
       preco_original: precoOriginalNum,
       desconto_pct: desconto ? parseInt(desconto) : undefined,
       imagem: imagemLimpa || '',
       link_afiliado: linkLimpo,
-      lojaOrigem: loja, // <-- Mantemos exclusivamente o padrão definido no DB
+      lojaOrigem: loja, // <-- Padrão camelCase mantido
       tags: tags.length > 0 ? tags : undefined,
       destaque,
       novo,
       createdAt: new Date(`${dataCadastro}T12:00:00Z`).toISOString(),
+    }
+
+    // Injetamos o ID ESTRITAMENTE se for uma edição (para a rota PUT funcionar)
+    if (isEdit && produto?.id) {
+      novoProduto.id = produto.id;
     }
 
     const url = isEdit ? `/api/produtos/${produto!.id}` : '/api/produtos'
@@ -238,17 +249,25 @@ export default function ProductForm({ categorias = [], produto, onSave, onCancel
       categoriaSlugs: selectedCategorias
     }
 
-    const res = await fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    })
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
 
-    if (res.ok) {
-      onSave()
-    } else {
-      const erroData = await res.json()
-      alert(`ERRO DO SUPABASE: ${JSON.stringify(erroData)}`)
+      if (res.ok) {
+        toast.success(isEdit ? 'Produto atualizado com sucesso!' : 'Produto cadastrado com sucesso!')
+        onSave()
+      } else {
+        const erroData = await res.json()
+        toast.error('Erro ao salvar produto', {
+          description: erroData.error || erroData.message || 'Verifique os dados e tente novamente.'
+        })
+      }
+    } catch (err) {
+      toast.error('Erro de Conexão', { description: 'Falha ao se comunicar com a API.' })
+    } finally {
       setLoading(false)
     }
   }

@@ -1,5 +1,6 @@
 import AdminSidebar from '@/components/admin/AdminSidebar'
 import SupabaseProgressBar from '@/components/admin/SupabaseProgressBar'
+import { Toaster } from "@/components/ui/sonner"
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -24,6 +25,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </div>
       </main>
+      
+      {/* Container global de notificações Sonner */}
+      <Toaster theme="dark" richColors position="bottom-right" />
     </div>
   )
 }

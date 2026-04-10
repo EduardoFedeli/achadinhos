@@ -13,25 +13,24 @@ export const POST = withAdmin(async function(req: Request) {
     const { produto, categoriaSlugs } = body
 
     // 1. Mapeamento e Blindagem
-    // Garantimos que o objeto enviado ao Supabase tenha exatamente 
-    // os nomes das colunas da tabela 'produtos'.
-    const insertData = {
-      id: produto.id,
+    // Corrigimos aqui para aceitar tanto preco_original quanto precoOriginal
+    const insertData: any = {
       nome: produto.nome,
       categoriaSlugs: categoriaSlugs,
-      lojaOrigem: produto.lojaOrigem || produto.loja || 'amazon', // Resolve o conflito pro Radar
+      lojaOrigem: produto.lojaOrigem || produto.loja || 'amazon',
       preco: produto.preco,
-      precoOriginal: produto.preco_original || null,
+      // BUSCA NAS DUAS VARIANTES:
+      precoOriginal: produto.preco_original || produto.precoOriginal || null, 
       desconto_pct: produto.desconto_pct || null,
       imagem: produto.imagem,
-      linkAfiliado: produto.link_afiliado,
+      linkAfiliado: produto.linkAfiliado || produto.link_afiliado,
       destaque: produto.destaque,
       createdAt: produto.createdAt,
       novo: produto.novo,
       tags: produto.tags || []
     }
 
-    // 2. Insere na tabela principal
+    // 2. Insere na tabela principal (O Banco gera o UUID automaticamente)
     const { data: newProd, error: prodError } = await supabase
       .from('produtos')
       .insert([insertData])
@@ -40,10 +39,12 @@ export const POST = withAdmin(async function(req: Request) {
 
     if (prodError) throw new Error(prodError.message)
 
-    // 3. Opcional: Se você usa tabela relacional 'produto_categoria', mantemos a inserção
+    const generatedId = newProd.id;
+
+    // 3. Tabela relacional 'produto_categoria'
     if (categoriaSlugs && categoriaSlugs.length > 0) {
       const catInserts = categoriaSlugs.map((slug: string) => ({
-        produto_id: produto.id,
+        produto_id: generatedId,
         categoria_slug: slug
       }))
       
@@ -54,7 +55,7 @@ export const POST = withAdmin(async function(req: Request) {
       if (catError) console.error('[API PRODUTOS] Erro na tabela relacional:', catError.message)
     }
 
-    return NextResponse.json({ success: true, id: produto.id })
+    return NextResponse.json({ success: true, id: generatedId })
   } catch (error: any) {
     console.error('[API PRODUTOS ERROR]', error.message)
     return NextResponse.json({ error: error.message || 'Erro ao criar produto.' }, { status: 500 })
