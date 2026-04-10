@@ -62,21 +62,18 @@ export default function CategoriaContent({ slug, categoriaAtual, categorias, pro
 
   return (
     <main className="relative z-10 w-full min-h-screen">
-      {/* TÉCNICA AVANÇADA DE UX/DEV: 
-        Injetamos o CSS dinâmico aqui via tag style para eliminar o uso de "style={{}}" nas divs abaixo.
-        Isso zera os avisos de "no-inline-styles" do seu editor e melhora a performance de renderização.
-      */}
       <style dangerouslySetInnerHTML={{ __html: `
         :root { --cat-color: ${corAtiva}; }
         .bg-cat-theme { background-color: var(--cat-color); }
         .text-cat-theme { color: var(--cat-color); }
         .shadow-cat-theme { box-shadow: 0 0 20px var(--cat-color); }
         .bg-gradient-cat-theme { background-image: linear-gradient(to right, #FFFFFF, var(--cat-color)); }
+        .custom-scrollbar-hide::-webkit-scrollbar { display: none !important; }
+        .custom-scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}} />
 
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[80vw] max-w-[1000px] h-[500px] opacity-20 pointer-events-none blur-[150px] -z-10 transition-colors duration-700 bg-cat-theme" />
 
-      {/* ESPAÇAMENTO CORRIGIDO: Troquei mt-1 por mt-8 md:mt-12 para dar respiro em relação ao Header */}
       <div className="w-full max-w-[1600px] mx-auto px-4 md:px-8 mt-8 md:mt-12 space-y-6">
         
         <div className="w-full lg:hidden mb-4">
@@ -105,10 +102,8 @@ export default function CategoriaContent({ slug, categoriaAtual, categorias, pro
 
         <div className="flex flex-col lg:flex-row gap-8 items-start">
           
-          <aside className="hidden lg:block w-[280px] shrink-0 sticky top-28 z-10 max-h-[calc(100vh-140px)] overflow-y-auto scrollbar-none" style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
-            <style jsx global>{`
-              aside::-webkit-scrollbar { display: none !important; }
-            `}</style>
+          {/* AQUI ESTÁ A CORREÇÃO: scrollbar-none nativo e sem 'style={{}}' */}
+          <aside className="hidden lg:block w-[280px] shrink-0 sticky top-28 z-10 max-h-[calc(100vh-140px)] overflow-y-auto custom-scrollbar-hide">
             <FilterPanel 
               filtros={filtros} 
               onFiltrosChange={setFiltros} 
