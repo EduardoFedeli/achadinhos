@@ -7,9 +7,8 @@ import { createClient } from "@supabase/supabase-js";
 import { getCategorias } from "@/lib/produtos";
 import { 
   Package, Tags, TrendingDown, Star, 
-  Activity, Trophy, ArrowRight, LineChart 
+  Activity, Trophy, LineChart 
 } from "lucide-react";
-import Link from "next/link";
 import AnalyticsChart from "@/components/admin/AnalyticsChart";
 
 // Força a revalidação dos dados a cada acesso no Admin
@@ -122,14 +121,9 @@ export default async function DashboardPage() {
 
       {/* FEED DE ATIVIDADE - Gestão de Conteúdo */}
       <footer className="bg-[#1A1A24] p-6 rounded-[24px] border border-[#2A2A35]">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2 text-white font-bold text-xl">
-            <Activity className="w-5 h-5" />
-            <h2>Últimos Cadastros</h2>
-          </div>
-          <Link href="/admin/produtos" className="text-xs font-black text-[#F97316] flex items-center gap-1 hover:brightness-110 transition-all uppercase tracking-tighter">
-            Ver Catálogo Completo <ArrowRight className="w-3 h-3"/>
-          </Link>
+        <div className="flex items-center gap-2 text-white font-bold text-xl mb-6">
+          <Activity className="w-5 h-5" />
+          <h2>Últimos Cadastros</h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           {ultimosProdutos.map(p => (
