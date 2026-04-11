@@ -65,7 +65,39 @@ export default function HeroBanner({ setApi }: { setApi?: (api: CarouselApi) => 
             </div>
           </CarouselItem>
 
-          {/* SLIDE 2: Foco em Filtros e Navegação */}
+          {/* SLIDE 2: Telegram (NOVO - Focado em Conversão) */}
+          <CarouselItem>
+             <div className="relative w-full h-full min-h-[400px] md:min-h-[450px] overflow-hidden bg-[#0A0A0F] border border-[#2A2A35] px-4 py-8 md:px-12 md:py-10 flex items-center justify-center">
+               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#0088CC]/20 via-[#0F0F13]/0 to-transparent pointer-events-none"></div>
+
+               <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 md:gap-16 max-w-5xl mx-auto w-full">
+                 <div className="text-center md:text-left flex flex-col items-center md:items-start max-w-lg">
+                    <span className="bg-[#0088CC]/10 text-[#0088CC] border border-[#0088CC]/30 text-xs font-black uppercase px-4 py-1.5 rounded-full mb-5 inline-block tracking-widest shadow-[0_0_15px_rgba(0,136,204,0.2)] animate-pulse">
+                      Canal do Telegram
+                    </span>
+                    <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tighter leading-[1.05] mb-5">
+                      Não perca mais <br className="hidden md:block" />nenhuma <span className="text-[#0088CC]">oferta.</span>
+                    </h2>
+                    <p className="text-[#A1A1AA] text-base md:text-lg mb-8 leading-relaxed">
+                      As melhores promoções esgotam em minutos. Entre no nosso grupo do Telegram e seja notificado no celular assim que algum produto chegar na loja!
+                    </p>
+                    <Link 
+                      href="https://t.me/+KJS4AekuWeYzMDZh" 
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 bg-[#0088CC] text-white px-6 py-3 rounded-full font-black text-sm hover:brightness-110 transition-all shadow-[0_4px_14px_rgba(0,136,204,0.4)]"
+                    >
+                      Entrar no Grupo Agora ✈️
+                    </Link>
+                 </div>
+                 <div className="text-[100px] md:text-[160px] drop-shadow-[0_0_40px_rgba(0,136,204,0.5)] hover:scale-105 transition-transform cursor-default">
+                   📱
+                 </div>
+               </div>
+             </div>
+          </CarouselItem>
+
+          {/* SLIDE 3: Foco em Filtros e Navegação */}
           <CarouselItem>
              <div className="relative w-full h-full min-h-[400px] md:min-h-[450px] overflow-hidden bg-[#0A0A0F] border border-[#2A2A35] px-4 py-8 md:px-12 md:py-10 flex items-center justify-center">
                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#22D3EE]/15 via-[#0F0F13]/0 to-transparent pointer-events-none"></div>
@@ -92,7 +124,7 @@ export default function HeroBanner({ setApi }: { setApi?: (api: CarouselApi) => 
              </div>
           </CarouselItem>
 
-          {/* SLIDE 3: Todas as Categorias (Novo!) */}
+          {/* SLIDE 4: Todas as Categorias */}
           <CarouselItem>
              <div className="relative w-full h-full min-h-[400px] md:min-h-[450px] overflow-hidden bg-gradient-to-br from-[#1E3A8A] to-[#0F172A] px-4 py-8 md:px-12 md:py-10 flex items-center justify-center">
                <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 md:gap-16 max-w-5xl mx-auto w-full">

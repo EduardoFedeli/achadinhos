@@ -30,6 +30,14 @@ export default function Footer() {
           <Link href="/sobre" className="text-[11px] text-[#A1A1AA] hover:text-white font-medium uppercase tracking-wider transition-colors">
             Sobre
           </Link>
+          <Link 
+            href="https://t.me/+KJS4AekuWeYzMDZh" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-[11px] text-[#0088CC] hover:text-[#0088CC]/80 font-black uppercase tracking-wider transition-colors"
+          >
+            Grupo Telegram
+          </Link>
         </nav>
 
         {/* Disclaimer */}
