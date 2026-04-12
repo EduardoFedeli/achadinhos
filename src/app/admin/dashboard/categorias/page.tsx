@@ -14,27 +14,34 @@ export default async function CategoriasPage() {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
-  // 3. CORREÇÃO: Busca as DUAS colunas (plural e singular) para garantir compatibilidade com produtos antigos
-  const { data: produtos } = await supabase.from('produtos').select('categoriaSlugs, categoriaSlug')
+  // 3. CORREÇÃO CRÍTICA: Pedir uma coluna que não existe quebra a query inteira.
+  // Selecionamos estritamente a coluna nova que vimos que existe (categoriaSlugs).
+  // Também extraímos o 'error' para não silenciar falhas do banco.
+  const { data: produtos, error } = await supabase
+    .from('produtos')
+    .select('categoriaSlugs')
+
+  // Se o Supabase rejeitar a query, isso vai gritar no seu terminal
+  if (error) {
+    console.error("🚨 ERRO SUPABASE NA CONTAGEM DAS CATEGORIAS:", error.message)
+  }
 
   // 4. Faz a matemática da contagem blindada
   const categoriasComContagem = categoriasBase.map(cat => {
-    const contagem = produtos?.filter(p => {
+    // Usamos (produtos || []) para garantir que não quebre o filter se a query falhar
+    const contagem = (produtos || []).filter(p => {
       let slugsArray: string[] = [];
       
-      // Checa o formato novo (Array)
+      // Checa o formato (Array nativo do Postgres)
       if (Array.isArray(p.categoriaSlugs)) {
         slugsArray = p.categoriaSlugs;
       } else if (typeof p.categoriaSlugs === 'string') {
         try { slugsArray = JSON.parse(p.categoriaSlugs); } catch (e) {}
       }
 
-      // Valida se está no array novo OU se está na coluna antiga (fallback)
-      const noArrayNovo = slugsArray.includes(cat.slug);
-      const naColunaAntiga = p.categoriaSlug === cat.slug;
-
-      return noArrayNovo || naColunaAntiga;
-    }).length || 0;
+      // Valida se o slug da categoria atual está dentro do array de categorias deste produto
+      return slugsArray.includes(cat.slug);
+    }).length;
 
     return {
       ...cat,

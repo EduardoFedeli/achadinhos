@@ -19,7 +19,8 @@ interface CategoriesPanelProps {
 export default function CategoriesPanel({ categorias }: CategoriesPanelProps) {
   const [search, setSearch] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingCategory, setEditingCategory] = useState<Categoria | undefined>()
+  // Tipagem corrigida para aceitar a quantidade
+  const [editingCategory, setEditingCategory] = useState<CategoriaComQuantidade | undefined>()
 
   const categoriasFiltradas = categorias.filter(cat =>
     cat.nome.toLowerCase().includes(search.toLowerCase()) ||
@@ -31,12 +32,12 @@ export default function CategoriesPanel({ categorias }: CategoriesPanelProps) {
     setIsModalOpen(true)
   }
 
-  function handleOpenEdit(cat: Categoria) {
+  // Tipagem corrigida
+  function handleOpenEdit(cat: CategoriaComQuantidade) {
     setEditingCategory(cat)
     setIsModalOpen(true)
   }
 
-  // Gera as classes dinâmicas para as cores sem usar style inline
   const dynamicStyles = categoriasFiltradas.map(cat => `
     .cat-card-${cat.slug}:hover { border-color: ${cat.cor}; box-shadow: 0 0 20px ${cat.cor}30; }
     .cat-line-${cat.slug} { background-color: ${cat.cor}; }

@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
-import { toast } from 'sonner' // <-- Nova importação de UX
+import { toast } from 'sonner' 
 import type { Produto, Categoria, Loja } from '@/types'
 import { createClient } from '@supabase/supabase-js'
 
@@ -49,6 +49,9 @@ export default function ProductForm({ categorias = [], produto, onSave, onCancel
   
   const [tagInput, setTagInput] = useState('')
   const [tags, setTags] = useState<string[]>(produto?.tags ?? [])
+  
+  // NOVO: Estado para armazenar as sugestões da categoria
+  const [sugestoesTags, setSugestoesTags] = useState<string[]>([])
 
   const [destaque, setDestaque] = useState(produto?.destaque ?? false)
   const [novo, setNovo] = useState(produto?.novo ?? false)
@@ -68,6 +71,34 @@ export default function ProductForm({ categorias = [], produto, onSave, onCancel
       if (data) setMarketplaces(data)
     })
   }, [])
+
+  // NOVO: Busca de tags sugeridas baseada nas categorias selecionadas
+  useEffect(() => {
+    async function carregarSugestoesDeTags() {
+      if (selectedCategorias.length === 0) {
+        setSugestoesTags([])
+        return
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('produtos')
+          .select('tags')
+          .not('tags', 'is', null)
+          .overlaps('categoriaSlugs', selectedCategorias) 
+
+        if (data && !error) {
+          const tagsBrutas = data.map((p: any) => p.tags || []).flat().filter(Boolean)
+          const tagsUnicas = Array.from(new Set(tagsBrutas)).sort()
+          setSugestoesTags(tagsUnicas as string[])
+        }
+      } catch (err) {
+        console.error('Falha ao carregar sugestões de tags', err)
+      }
+    }
+
+    carregarSugestoesDeTags()
+  }, [selectedCategorias])
 
   // Lógica de Auditoria de 90 dias
   const isPassado90Dias = (() => {
@@ -221,7 +252,6 @@ export default function ProductForm({ categorias = [], produto, onSave, onCancel
     
     setLoading(true)
 
-    // CORREÇÃO CRÍTICA: Sem ID fake para o Supabase gerar o UUID nativo via db.
     const novoProduto: any = {
       nome: nomeLimpo,
       preco: precoNum,
@@ -229,14 +259,13 @@ export default function ProductForm({ categorias = [], produto, onSave, onCancel
       desconto_pct: desconto ? parseInt(desconto) : undefined,
       imagem: imagemLimpa || '',
       link_afiliado: linkLimpo,
-      lojaOrigem: loja, // <-- Padrão camelCase mantido
+      lojaOrigem: loja, 
       tags: tags.length > 0 ? tags : undefined,
       destaque,
       novo,
       createdAt: new Date(`${dataCadastro}T12:00:00Z`).toISOString(),
     }
 
-    // Injetamos o ID ESTRITAMENTE se for uma edição (para a rota PUT funcionar)
     if (isEdit && produto?.id) {
       novoProduto.id = produto.id;
     }
@@ -365,14 +394,14 @@ export default function ProductForm({ categorias = [], produto, onSave, onCancel
           )}
         </div>
 
-        {/* BLOCO 3: Tags */}
+        {/* BLOCO 3: Tags (MODIFICADO COM SUGESTÕES) */}
         <div className="bg-[#1A1A24]/40 p-4 sm:p-5 rounded-xl border border-primary/30 relative flex flex-col gap-3 h-full">
           <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-[9px] font-black px-2 py-0.5 rounded-bl-lg rounded-tr-xl uppercase tracking-widest">
             Atenção
           </div>
           <h3 className="text-xs font-black uppercase tracking-widest text-white mb-1">3. Tags</h3>
           
-          <div className="space-y-1.5 flex-1">
+          <div className="space-y-1.5 flex-1 flex flex-col">
             <Label className="text-xs text-muted-foreground">Adicionar Tag (Enter)</Label>
             <Input
               value={tagInput} onChange={e => setTagInput(e.target.value)} onKeyDown={addTag}
@@ -381,7 +410,32 @@ export default function ProductForm({ categorias = [], produto, onSave, onCancel
             <p className="text-[10px] text-muted-foreground mt-1 bg-[#0F0F13] p-1.5 rounded-md border border-[#2A2A35] leading-tight">
               ⚠️ Cadastre <strong>SEMPRE NO SINGULAR</strong>. Só use plural se a palavra exigir (Ex: Tênis).
             </p>
-            <div className="mt-2 flex flex-wrap gap-1.5">
+
+            {/* SUGESTÕES DE TAGS */}
+            {sugestoesTags.filter(t => !tags.includes(t)).length > 0 && (
+              <div className="mt-3">
+                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 block">
+                  💡 Sugestões da Categoria
+                </Label>
+                <div className="flex flex-wrap gap-1.5 max-h-[140px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-[#2A2A35] scrollbar-track-transparent">
+                  {sugestoesTags
+                    .filter(t => !tags.includes(t))
+                    .map(sugestao => (
+                      <button
+                        key={sugestao}
+                        type="button"
+                        onClick={() => setTags([...tags, sugestao])}
+                        className="flex items-center gap-1 rounded-md bg-transparent border border-dashed border-[#2A2A35] px-2 py-1 text-[11px] text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary hover:border-primary/40 shrink-0"
+                      >
+                        + {sugestao}
+                      </button>
+                    ))}
+                </div>
+              </div>
+            )}
+
+            {/* TAGS ADICIONADAS */}
+            <div className={`flex flex-wrap gap-1.5 mt-auto pt-3 ${tags.length > 0 ? 'border-t border-[#2A2A35] mt-3' : ''}`}>
               {tags.map(tag => (
                 <button 
                   key={tag} type="button" onClick={() => removeTag(tag)} 

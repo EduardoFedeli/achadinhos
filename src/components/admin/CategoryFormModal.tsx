@@ -6,15 +6,16 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import type { Categoria } from '@/types'
 
-// Adicionando o tipo novo
-interface CategoriaComImagem extends Categoria {
+// Adicionando quantidade para gerenciar a exclusão
+interface CategoriaComImagemEQuantidade extends Categoria {
   imagem_url?: string;
+  quantidade?: number;
 }
 
 interface CategoryFormModalProps {
   isOpen: boolean
   onClose: () => void
-  category?: CategoriaComImagem
+  category?: CategoriaComImagemEQuantidade
 }
 
 export default function CategoryFormModal({ isOpen, onClose, category }: CategoryFormModalProps) {
@@ -24,7 +25,7 @@ export default function CategoryFormModal({ isOpen, onClose, category }: Categor
   const [emoji, setEmoji] = useState('')
   const [cor, setCor] = useState('#22C55E')
   const [descricao, setDescricao] = useState('')
-  const [imagemUrl, setImagemUrl] = useState('') // NOVO ESTADO
+  const [imagemUrl, setImagemUrl] = useState('')
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -49,7 +50,6 @@ export default function CategoryFormModal({ isOpen, onClose, category }: Categor
     e.preventDefault()
     setLoading(true)
 
-    // Impede de colocar link inteiro no Slug
     if (slug.includes('http')) {
       alert("O Slug não pode ser um link! Use apenas letras minúsculas e hífens. Ex: casa-inteligente")
       setLoading(false)
@@ -57,7 +57,6 @@ export default function CategoryFormModal({ isOpen, onClose, category }: Categor
     }
 
     const payload = { nome, slug, emoji, cor, descricao, imagem_url: imagemUrl }
-    // O encodeURIComponent transforma as barras e pontos em texto seguro para a URL não quebrar
     const url = isEdit ? `/api/categorias/${encodeURIComponent(category.slug)}` : '/api/categorias'
     const method = isEdit ? 'PUT' : 'POST'
 
@@ -78,6 +77,36 @@ export default function CategoryFormModal({ isOpen, onClose, category }: Categor
       alert('Erro de comunicação.')
     } finally {
       setLoading(false)
+    }
+  }
+
+  // Trava de exclusão (UX)
+  async function handleDelete() {
+    if (!category) return;
+
+    if (category.quantidade && category.quantidade > 0) {
+      alert(`⚠️ AÇÃO BLOQUEADA\n\nEsta categoria possui ${category.quantidade} produto(s) vinculado(s).\nVocê precisa remover ou alterar a categoria desses produtos antes de excluí-la.`);
+      return;
+    }
+
+    if (confirm(`Tem certeza que deseja excluir permanentemente a categoria "${category.nome}"?\n\nEssa ação não pode ser desfeita.`)) {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/categorias/${encodeURIComponent(category.slug)}`, {
+          method: 'DELETE',
+        });
+
+        if (res.ok) {
+          window.location.reload();
+        } else {
+          const data = await res.json();
+          alert(`Erro ao excluir: ${data.error}`);
+        }
+      } catch (err) {
+        alert('Erro de comunicação ao tentar excluir.');
+      } finally {
+        setLoading(false);
+      }
     }
   }
 
@@ -125,11 +154,26 @@ export default function CategoryFormModal({ isOpen, onClose, category }: Categor
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 mt-2 pt-4 border-t border-[#2A2A35]">
-            <Button type="button" variant="ghost" onClick={onClose} className="hover:bg-[#2A2A35] text-white h-9">Cancelar</Button>
-            <Button type="submit" disabled={loading} className="bg-[#22C55E] text-black font-bold hover:bg-[#22C55E]/80 h-9">
-              {loading ? 'Salvando...' : 'Salvar'}
-            </Button>
+          <div className="flex justify-between items-center mt-2 pt-4 border-t border-[#2A2A35]">
+            <div>
+              {isEdit && (
+                <Button 
+                  type="button" 
+                  variant="outline"
+                  onClick={handleDelete}
+                  disabled={loading}
+                  className="bg-transparent border-[#FF3838]/30 text-[#FF3838] hover:bg-[#FF3838] hover:text-white hover:border-[#FF3838] h-9 px-3 text-xs transition-colors"
+                >
+                  Excluir
+                </Button>
+              )}
+            </div>
+            <div className="flex gap-3">
+              <Button type="button" variant="ghost" onClick={onClose} className="hover:bg-[#2A2A35] text-white h-9">Cancelar</Button>
+              <Button type="submit" disabled={loading} className="bg-[#22C55E] text-black font-bold hover:bg-[#22C55E]/80 h-9">
+                {loading ? 'Salvando...' : 'Salvar'}
+              </Button>
+            </div>
           </div>
         </form>
       </div>
